@@ -167,18 +167,9 @@
 	}
 
 	.settings
-	{
-		height: 25vw;
-		background: #FFFFFF;		
-		left: 25vw;
-		top: 10vw;
-		border: 1px solid #000000;
-		z-index: 3;
-		position:fixed;
-
+	{		
+		z-index: 3;	
 		color: #000000;
-		align-content: center;
-
 		font-size: 1vw;		
 	}
 
@@ -198,6 +189,7 @@
 	table, tbody,tr,td
 	{
 		padding-top: 0.5vw;
+		margin-bottom: 0%;
 	} 
 
 	.form-inline .form-group
@@ -245,8 +237,10 @@
   	</div>  
 
 	<div class="cd-popup" role="alert">
-		<div style="background: white;margin-left: 25vw;margin-right: 25vw;border: 1px solid #000;margin-top: 10vw;min-height: 10vw;position: relative;">
-			<svg class="closeButton" preserveAspectRatio="xMaxYMax" style="position: absolute; cursor: pointer;width: 2vw;margin: 0.6vw;right: 0px;" viewBox="0 0 9.15 9.15"><g><path style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.87900001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 1.1718002,0.4395 c -0.18793031,0 -0.37590407,0.0720939 -0.51990596,0.21609581 -0.28800418,0.28800418 -0.28800418,0.75140969 0,1.03941369 L 2.2116125,3.254728 0.65189424,4.8144464 c -0.28800418,0.2880042 -0.28800418,0.7518084 0,1.0398123 0.28800398,0.2880042 0.75180806,0.2880042 1.03981226,0 L 3.2514248,4.2945403 4.8107446,5.8542587 c 0.2880042,0.2880042 0.7518084,0.2880042 1.0398124,0 0.2880041,-0.2880039 0.2880041,-0.7518081 0,-1.0398123 L 4.2908385,3.254728 5.850557,1.6950095 c 0.2880041,-0.288004 0.2880041,-0.75140951 0,-1.03941369 -0.288004,-0.28800397 -0.7518082,-0.28800397 -1.0398124,0 L 3.2514248,2.2153145 1.6917065,0.65559581 C 1.5477045,0.51159393 1.3597306,0.4395 1.1718002,0.4395 Z" id="rect862-7-3" inkscape:connector-curvature="0"></path></g></svg>
+		<div class = 'popupBody' style="background: white;margin-left: 25vw;margin-right: 25vw;border: 1px solid #000;margin-top: 10vw;min-height: 10vw;position: relative;">
+			<div class="settings form-inline" style="height: 25.5vw;">
+				<button id="submit" type="submit" class="btn btn-default align-bottom" style="position:absolute;bottom: 0vw;margin: 2vw;right: 0vw;">Submit</button>
+			</div>
 		</div>	
 	</div>
 

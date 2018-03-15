@@ -17,45 +17,45 @@ var colNames=[];
 
 var lastUsedSettings=[];
 
+function updatePopup(jqObj, txt, eventFunctions)
+{
+	var popup = $('.cd-popup');
+	popup.find('.popupBody').html('<div class="settings form-inline" style="height: 25.5vw;">' +
+	'	<button id="submit" type="submit" class="btn btn-default align-bottom" style="position:absolute;bottom: 0vw;margin: 2vw;right: 0vw;">'+txt+'</button>' +
+	'</div>');
+	popup.find('.settings').append(jqObj);
+
+	eventFunctions();
+
+	popup.toggleClass('is-visible');
+};
+
+
 function attachGraphSettingsScript(panelObj,readerResult)
 {
 	var dataCols = d3.csvParse(readerResult);
 	colNames=Object.keys(dataCols[0]);colNames.unshift('');
 
-	var popup = $('.cd-popup');
-	popup.append(mainGraphSettings.settingsPopupHTML());// graph settings popup
-	mainGraphSettings.attachEvents();//attach dropdown event to graph type
-
-	popup.toggleClass('is-visible');
-
-	$('button#submit').click(function()
+	myFunc=function()
 	{
-		popup.toggleClass('is-visible');
-		submitSettings(panelObj,readerResult);
-	});
+		mainGraphSettings.attachEvents();
+		$('button#submit').click(function()
+		{
+			$('.cd-popup').removeClass('is-visible');
+			submitSettings(panelObj,readerResult);
+		});
+	};
+
+	updatePopup(mainGraphSettings.settingsPopupHTML(),'Submit',myFunc);
 };
 
 var mainGraphSettings =
 {
 	settingsPopupHTML:function()
 	{
-		var lastUsedOptions=lastUsedSettings.map(function(a){return a.title;});
-		lastUsedOptions.unshift('');
-		var s =
-		'<div class="settings" style="width: 49.5vw;height: 25.5vw;">' +			
-			'<div class="form-inline">' +//action="DA_engine.html" method="post"
-				this.mainTableHTML() +
-				'<button id="submit" type="submit" class="btn btn-default align-bottom" style="position:fixed;right: 27vw;top: 32vw;">Submit</button>' +
-			'</div>' +
-			'<svg class="closeButton" preserveAspectRatio="xMaxYMax" style="position: absolute;top: 0px;right: 0px; cursor: pointer;width: 2vw;" viewBox="0 0 9.15 9.15">' +
-			  '<g>' +
-			    '<path style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.87900001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 1.1718002,0.4395 c -0.18793031,0 -0.37590407,0.0720939 -0.51990596,0.21609581 -0.28800418,0.28800418 -0.28800418,0.75140969 0,1.03941369 L 2.2116125,3.254728 0.65189424,4.8144464 c -0.28800418,0.2880042 -0.28800418,0.7518084 0,1.0398123 0.28800398,0.2880042 0.75180806,0.2880042 1.03981226,0 L 3.2514248,4.2945403 4.8107446,5.8542587 c 0.2880042,0.2880042 0.7518084,0.2880042 1.0398124,0 0.2880041,-0.2880039 0.2880041,-0.7518081 0,-1.0398123 L 4.2908385,3.254728 5.850557,1.6950095 c 0.2880041,-0.288004 0.2880041,-0.75140951 0,-1.03941369 -0.288004,-0.28800397 -0.7518082,-0.28800397 -1.0398124,0 L 3.2514248,2.2153145 1.6917065,0.65559581 C 1.5477045,0.51159393 1.3597306,0.4395 1.1718002,0.4395 Z" id="rect862-7-3" inkscape:connector-curvature="0"></path>' +
-			  '</g>' +
-			'</svg>' +
-			'<div class="lastUsed" style="position: fixed;top: 11.45vw;left: 46vw; cursor: pointer;">'+
-				createDropdown('Load last used settings',['lastUsedOptions'],lastUsedOptions,'style="width: 13vw;height: 2vw;margin-left: 1vw;"')+
-			'</div>'+
-		'</div>';
+		//var lastUsedOptions=lastUsedSettings.map(function(a){return a.title;});
+		//lastUsedOptions.unshift('');
+		var s =	this.mainTableHTML();
 		return s;
 	},
 
@@ -164,9 +164,10 @@ var mainGraphSettings =
 	});},
 
 	attachEvents:function(){
-		this.graphTypeEvent_Dropdown();
-		this.titleChangeEvent();
-		this.closeButtonClick();
+		mainGraphSettings.graphTypeEvent_Dropdown();
+		mainGraphSettings.titleChangeEvent();
+		mainGraphSettings.closeButtonClick();
+
 		//this.lastUsedChangeEvent();
 	},
 };	
