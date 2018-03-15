@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>	
+	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="stylesheet" href="bootstrap.min.css">
+  	<script src="jquery-3.2.1.min.js"></script>
+  	<script src="bootstrap.min.js"></script>
+
+
+  	<style type="text/css" media="screen">
+	:root
+	{
+		--dark-blue: #0D454C;
+		--light-blue: #35CCD2;
+		--blue-three: #21888F;
+
+		--red-one:#FF0000;
+		--red-two:#FDCFCF;
+
+		--tab-width:20%;
+
+		--setting-c-width:45vw;
+	}
+
+	body
+	{
+		background-color: var(--dark-blue);
+		color:#FFFFFF;
+	}
+
+	img
+	{
+		max-width: 100%;
+		max-height:100%;
+	}
+	.label 
+	{
+		font: 12px arial,serif bold;
+		text-anchor: middle;
+		float:left;
+		position: relative;
+	}
+
+	.path
+	{
+		max-width: 100%;
+		max-height:100%;
+	}
+
+
+	.row.content {height: 550px}	  
+	.sidenav 
+	{
+		background-color: var(--light-blue);
+		height: 100vh;
+		border-radius: 10px;
+		color: #FFFFFF;
+	}
+
+	.zoom
+	{
+	zoom:1;
+	-moz-transform: scale(1);
+	-moz-transform-origin:0 0;
+	  overflow:hidden;
+	}
+
+	.plot 
+	{
+	  background: black; 
+	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	  position: relative;
+	  width: window.innerWidth;
+	  overflow:hidden;
+	}
+
+	text 
+	{
+	  fill: white;
+	  font: 1px arial,serif bold;
+	}
+
+	.axis path, .axis line 
+	{
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+	.inactive 
+	{	  
+		  opacity:0.1;
+	}
+
+	.active 
+	{	  
+		  opacity:1;
+	}	
+
+	.main-svg
+	{
+		background: transparent;
+	}
+
+	#panelSelectionWindow {		
+		z-index: 9999;
+		position: fixed;
+		width: var(--tab-width);
+		height: 100%;
+		background: var(--red-two);
+		border: 7px solid #fff;
+		bottom: 0;
+		margin-left: calc(0px - var(--tab-width));
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
+	}
+
+
+
+	.tab 
+	{
+		z-index: 9999;
+		margin-left: 0%;
+		position: fixed;
+		color: #fff;
+		bottom: 50%;
+		font-size: 15px;		
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
+		cursor: pointer;
+		text-align: left;
+		letter-spacing: 1px;
+	}
+
+	.tab::after {
+		content: '';
+		display: block;
+		display: relative;
+		border-top: 175px solid transparent;
+		border-bottom: 175px solid transparent;
+		border-left: 30px solid var(--red-one);
+	}
+
+	#panelSelectionWindow.out
+	{
+		margin-left: 0%;
+	}
+
+	.tab.out
+	{
+		margin-left: var(--tab-width);
+	}
+
+	.btn-new-panel
+	{		
+		width: 90%;
+		height: 10%;
+		margin-left: 5%;
+		margin-top: 5%;
+		margin-bottom: 15%;
+		border-radius: 20%;
+	}
+
+	.settings
+	{
+		height: 25vw;
+		background: #FFFFFF;		
+		left: 25vw;
+		top: 10vw;
+		border: 1px solid #000000;
+		z-index: 3;
+		position:fixed;
+
+		color: #000000;
+		align-content: center;
+
+		font-size: 1vw;		
+	}
+
+	.form-inline
+	{
+		height: 100%;
+		margin: 1vw;
+	}
+	
+	.mainTable
+	{
+		width: var(--setting-c-width);
+		height: 2vw;		
+		margin-left: 1%;
+	}
+
+	table, tbody,tr,td
+	{
+		padding-top: 0.5vw;
+	} 
+
+	.form-inline .form-group
+	{
+		width: 95%;
+		margin-bottom: 2%;
+	}
+
+	.borderless td, .borderless th
+	{
+	  border:none !important;
+	}
+
+	.dropdown
+	{
+		width:100%;
+	}
+
+	svg
+	{
+		cursor: default;
+	}
+  	</style>
+  	<link rel="stylesheet" type="text/css" href="dragpanel.css">
+  	<link rel="stylesheet" type="text/css" href="dragdropfile.css">
+  	<link rel="stylesheet" type="text/css" href="popupnugget.css">
+</head>
+<body>
+	<div id="tooltip" 
+		style="visibility: hidden; 
+			position: fixed;		
+			padding: 0.5em; 
+			border-radius: 0.5em; 
+			border: medium none black; 
+			background-color: rgb(20, 20, 100); 
+			font: normal normal bold normal 15px arial, serif; 
+			color: white;
+			z-index:9999;
+			">
+	</div>
+
+	<div id="panelSelectionWindow">
+    	<div id="close" class="close"></div>    	
+    	<br>    	
+  	</div>  
+
+	<div class="cd-popup" role="alert">
+		<div style="background: white;margin-left: 25vw;margin-right: 25vw;border: 1px solid #000;margin-top: 10vw;min-height: 10vw;position: relative;">
+			<svg class="closeButton" preserveAspectRatio="xMaxYMax" style="position: absolute; cursor: pointer;width: 2vw;margin: 0.6vw;right: 0px;" viewBox="0 0 9.15 9.15"><g><path style="opacity:1;fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.87900001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" d="m 1.1718002,0.4395 c -0.18793031,0 -0.37590407,0.0720939 -0.51990596,0.21609581 -0.28800418,0.28800418 -0.28800418,0.75140969 0,1.03941369 L 2.2116125,3.254728 0.65189424,4.8144464 c -0.28800418,0.2880042 -0.28800418,0.7518084 0,1.0398123 0.28800398,0.2880042 0.75180806,0.2880042 1.03981226,0 L 3.2514248,4.2945403 4.8107446,5.8542587 c 0.2880042,0.2880042 0.7518084,0.2880042 1.0398124,0 0.2880041,-0.2880039 0.2880041,-0.7518081 0,-1.0398123 L 4.2908385,3.254728 5.850557,1.6950095 c 0.2880041,-0.288004 0.2880041,-0.75140951 0,-1.03941369 -0.288004,-0.28800397 -0.7518082,-0.28800397 -1.0398124,0 L 3.2514248,2.2153145 1.6917065,0.65559581 C 1.5477045,0.51159393 1.3597306,0.4395 1.1718002,0.4395 Z" id="rect862-7-3" inkscape:connector-curvature="0"></path></g></svg>
+		</div>	
+	</div>
+
+  	<div class="tab" id="plus"></div>
+	<div class="container-fluid">		
+		<div class="col-lg-12 col-md-12 col-sm-12">
+			<div class="grid" id="drag-grid" style="position: relative; height: 1493.64px;">
+			    <div class="gutter-sizer"></div>
+			    <div class="grid-sizer"></div>			  	   
+			</div>
+		</div>
+	</div>	
+<script src="./globalVariables.js"></script>
+
+<script src="./core/jquery.min.js"></script>
+<script src="./core/packery.pkgd.min.js"></script>
+<script src="./core/draggabilly.pkgd.js"></script>
+
+<script src="./graphSettingsController.js"></script>
+<script src="./dragpanelhelper.js"></script>
+<script src="./ddfile.js"></script>
+
+
+<script src="./core/d3.v4.min.js"></script>
+<script src="./core/d3-contour.v1.min.js"></script>
+<script src="./core/d3-scale-chromatic.v1.min.js"></script>
+<script src="./scatterGenerator.js"></script>
+
+<script>
+	$("#plus").click(function() {	
+		$("#panelSelectionWindow").toggleClass('out');
+		$("#plus").toggleClass('out');	
+	});
+</script>
+
+
+
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

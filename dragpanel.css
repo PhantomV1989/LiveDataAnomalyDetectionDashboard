@@ -1,0 +1,94 @@
+      :root
+      {
+        --gap: 5px;
+        --unit-size: 220px;
+        --transition-time:0.2s;
+      }
+
+      .grid {
+        background: #0D454C;
+      }
+
+      .grid .grid-sizer,
+      .grid .grid-item { 
+        width:var(--unit-size);   
+      }
+
+      .gutter-sizer{
+        width: var(--gap);
+      }
+
+     
+      .grid .grid-item {
+        height: var(--unit-size);
+        float: left;       
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        z-index: 1;
+        color: #fff;
+        font-size: 50px;
+        border-radius: 5%;              
+        transition: width var(--transition-time), height var(--transition-time);
+      }
+
+      .grid-item.two
+      {
+        width: calc(var(--unit-size) * 2 + var(--gap));   
+        height: calc(var(--unit-size) * 2 + var(--gap));
+      }
+
+       .grid-item.three
+      {
+        width: calc(var(--unit-size) * 3 + var(--gap) * 2);   
+        height: calc(var(--unit-size) * 3 + var(--gap) * 2);
+      }
+
+       .grid-item.four
+      {
+        width: calc(var(--unit-size) * 4 + var(--gap) * 3);   
+        height: calc(var(--unit-size) * 4 + var(--gap) * 3);
+      }
+
+       .grid-item.five
+      {
+        width: calc(var(--unit-size) * 5 + var(--gap) * 4);   
+        height: calc(var(--unit-size) * 5 + var(--gap) * 4);
+      }
+
+       .grid-item.six
+      {
+        width: calc(var(--unit-size) * 7 + var(--gap) * 6);   
+        height: calc(var(--unit-size) * 7 + var(--gap) * 6);
+      }
+
+      .grid .grid-item:hover {
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+        background: #4D6FDC;
+        cursor: move;
+        z-index: 2;
+      }
+      .grid .grid-item.is-dragging, .grid .grid-item.is-positioning-post-drag, .grid .grid-item:active {
+        border-color: rgba(0, 0, 0, 0.1);
+        background: #FCFF00;
+        z-index: 2;
+        box-shadow: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
+      }
+     
+      .grid .gutter-sizer {
+        width: var(--gap);
+      }    
+     
+      .grid:after {
+        content: "";
+        display: block;
+        clear: both;
+      }
+
+      .packery-drop-placeholder {
+        outline: 6px dashed #E1E1E1;
+        outline-offset: -6px;
+        border-radius: 6px;
+        z-index: 0;
+        -webkit-transition: -webkit-transform 0.2s;
+        transition: transform 0.2s;
+      }
+
