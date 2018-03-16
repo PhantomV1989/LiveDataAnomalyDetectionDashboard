@@ -285,7 +285,7 @@ var scatter =
 
 		var data = {};
 
-		$('.x-axis').change(function(){data.x=this.value;settingsObj.data[]=this.value;});
+		$('.x-axis').change(function(){data.x=this.value;settingsObj.x=this.value;});
 		$('.y-axis').change(function(){data.y=this.value;settingsObj.y=this.value;});
 	},
 

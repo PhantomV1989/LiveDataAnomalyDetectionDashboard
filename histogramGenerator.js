@@ -47,6 +47,16 @@ histogramGraph.generateHistogram=
 	      return false;
 	    };
 
+	    //histogram code
+	    var svg = histogramGraph.generateSVG(panelObj)//this line must come first before svgInfo
+	        w=histogramGraph.svgInfo.width,
+	        h=histogramGraph.svgInfo.height,
+	        pw=histogramGraph.svgInfo.paintWidth,
+	        ph=histogramGraph.svgInfo.paintHeight;
+
+		    
+	    //end of histogram code
+
 
 	    var svg = histogramGraph.generateSVG(panelObj)//this line must come first before svgInfo
 	        w=histogramGraph.svgInfo.width,
