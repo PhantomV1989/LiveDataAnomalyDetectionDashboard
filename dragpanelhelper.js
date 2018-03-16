@@ -348,6 +348,7 @@ var panelling =
           reader.readAsText(f);
           reader.onload = function(e) 
           { 
+            panelObj.fileName = files[0].name;
             attachGraphSettingsScript(panelObj,reader.result);//graphSettingsController.js             
           };         
         }

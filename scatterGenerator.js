@@ -1,52 +1,14 @@
-var graphScaleWidth = 0.85;
-var graphScaleHeight = 0.7;
+var graphScaleWidth = graphScaleWidth;// declared in globalVariables.js
+var graphScaleHeight = graphScaleHeight;
+var unitSize = unitSize;
 
-var unitSize = unitSize;//unitSize declared in globalVariables.js
-
-var dotSize = unitSize/150;
+var MarkerSize = unitSize/150;
 var lineThickness= unitSize/200;
 var contourDensityValue=6;
 
-
+var resolution = 1;
 
 var scatterGraph=jQuery.extend(true, {}, abstractGraph);//object inheritance
-
-function AppendSettings(graphObj)
-{
-  var svgObj = graphObj.svgObj;
-  var width = graphObj.svgInfo.width;
-  var height = graphObj.svgInfo.height;
-  var id = 'settings';
-  var gear = svgObj.append('svg').attr('id','settings').attr('transform','translate('+String(width-30)+','+String(8)+')')
-  .attr('width','18').attr('height', '18').attr('viewBox','0 0 24 24');
-  gear.html('<path d="M24 13.616v-3.232c-1.651-.587-2.694-.752-3.219-2.019v-.001c-.527-1.271.1-2.134.847-3.707l-2.285-2.285c-1.561.742-2.433 1.375-3.707.847h-.001c-1.269-.526-1.435-1.576-2.019-3.219h-3.232c-.582 1.635-.749 2.692-2.019 3.219h-.001c-1.271.528-2.132-.098-3.707-.847l-2.285 2.285c.745 1.568 1.375 2.434.847 3.707-.527 1.271-1.584 1.438-3.219 2.02v3.232c1.632.58 2.692.749 3.219 2.019.53 1.282-.114 2.166-.847 3.707l2.285 2.286c1.562-.743 2.434-1.375 3.707-.847h.001c1.27.526 1.436 1.579 2.019 3.219h3.232c.582-1.636.75-2.69 2.027-3.222h.001c1.262-.524 2.12.101 3.698.851l2.285-2.286c-.744-1.563-1.375-2.433-.848-3.706.527-1.271 1.588-1.44 3.221-2.021zm-12 2.384c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/></svg>');
-  gear.on('click',function()
-  {
-    var popup = $('.cd-popup');
-    popup.toggleClass('is-visible');
-  });
-
-  return id;
-};
-
-function AppendCheckBox(svgObj,label,position)
-{
-  //label eg 'Boy', position eg '[10,10]'
-  var chkbxObj = svgObj.append('g').attr('id', label);;
-  var id = label+'_check'; 
-  chkbxObj.append('rect').attr('transform','translate('+position[0]+','+position[1]+')').attr('width','8').attr('height','8').attr('fill','#FFFFFF').attr('stroke','#00ABBB').attr('stroke-width','0');
-
-
-   chkbxObj.append('polygon').attr('id',id).attr('transform','translate('+String(position[0]-3.5)+','+String(position[1]+0.5)+')')//6.5,10.5
-  .attr('points','6.736691468, 4.348678044 3.794815034, 3.069598093 3.155282512, 3.28278057 6.736691468, 6.906823039 11.89564479, 0.426171164 11.00029627, 0.426171164')
-  .attr('fill','#000000');
-
-  chkbxObj.append('text').attr('transform','translate('+String(position[0]+9)+','+String(position[1]+7)+')')
-  .style('font-size','6px').html(label);
- 
-  return id;
-};
-
 
 scatterGraph.generateScatter=
 {
@@ -103,8 +65,8 @@ scatterGraph.generateScatter=
     var svg = scatterGraph.generateSVG(panelObj)//this line must come first before svgInfo
         w=scatterGraph.svgInfo.width,
         h=scatterGraph.svgInfo.height,
-        pw=scatterGraph.svgInfo.paintWidth,
-        ph=scatterGraph.svgInfo.paintHeight;
+        pw=scatterGraph.svgInfo.paintWidth*resolution,
+        ph=scatterGraph.svgInfo.paintHeight*resolution;
 
     var x = d3.scaleLinear().range([0, pw]),
     y = d3.scaleLinear().range([ph, 0]);
@@ -139,13 +101,13 @@ scatterGraph.generateScatter=
       y.domain([yRng.min,yRng.max]);
 
      
-      switch(settingsObj.optionA)//g2d:['','Dot', 'Line', 'Dot-Line', 'Timed']
+      switch(settingsObj.optionA)//g2d:['','Marker', 'Line', 'Marker-Line', 'Timed']
       {
-        case 'Dot':
-          g.append("g").selectAll("g")
+        case 'Marker':
+          g.append("g").attr("class","Marker").selectAll("g")
           .data(data)
-          .enter().append("circle").attr("class","dot")
-          .attr("r", dotSize)
+          .enter().append("circle")
+          .attr("r", MarkerSize)
           .attr("cx",function(d){return x(d[settingsObj.x]);})
           .attr("cy",function(d){return y(d[settingsObj.y]);})
           .attr('',function(d){var s='x:'+d[settingsObj.x] + '  y:'+d[settingsObj.y]; activateTooltipOnObject(s,this);});
@@ -176,10 +138,10 @@ scatterGraph.generateScatter=
         case 'Density Contour':
           var startColor=panelObj[0].style.backgroundColor;
 
-           g.append("g").selectAll("g")
+           g.append("g").attr("class","Marker").selectAll("g")
           .data(data)
-          .enter().append("circle").attr("class","dot")
-          .attr("r", dotSize)
+          .enter().append("circle")
+          .attr("r", MarkerSize)
           .attr("cx",function(d){return x(d[settingsObj.x]);})
           .attr("cy",function(d){return y(d[settingsObj.y]);})
           .attr('',function(d){var s='x:'+d[settingsObj.x] + '  y:'+d[settingsObj.y]; activateTooltipOnObject(s,this);});
@@ -193,7 +155,7 @@ scatterGraph.generateScatter=
           };
 
           var contourObj=d3.contourDensity().x(function(d) { return x(d[settingsObj.x]); }).y(function(d) 
-          { return y(d[settingsObj.y]); }).size([paintWidth, paintHeight]).bandwidth(contourDensityValue)(data);//d3.max(contourObj,function(d){return d.value;})
+          { return y(d[settingsObj.y]); }).size([pw, ph]).bandwidth(contourDensityValue)(data);//d3.max(contourObj,function(d){return d.value;})
           var colorDivisor=d3.max(contourObj,function(d){return d.value;});//normalize contourObj values against its highest value
 
           g.insert("g", "g")
@@ -208,8 +170,55 @@ scatterGraph.generateScatter=
           .attr("fill",  function(d) {return customColorGradient(startColor,'rgb(0,255,0)',d.value/colorDivisor);})
           .attr("d", d3.geoPath());
 
-         
-          AppendSettings(scatterGraph);
+          // the following part for external settings
+          var clClass = panelObj[0].id + 'cl';panelObj.clClass=true;
+          var mClass = panelObj[0].id + 'M';panelObj.mClass=true;
+          var checkboxContourlines = CreateCheckBox('Contour Lines', clClass);
+          var checkboxMarkers = CreateCheckBox('Marker',mClass);
+         //AppendSettings(graphObj, content, event)
+          var s = 
+          '<div>' +
+          checkboxContourlines+'<br>' +
+          checkboxMarkers+
+          '</div>';
+
+          var f = function()
+          {            
+            var fh = function(label,f1,proptyName)
+            {
+              $('.'+label).prop('checked',panelObj[proptyName]);
+
+              $('.'+label+'_label').mousedown(function()
+                {                
+                  $('.'+label)[0].checked = $('.'+label)[0].checked?false:true; 
+                  f1(label,proptyName);              
+                });
+              $('.'+label).change(function(){f1(label,proptyName);});
+
+            };
+
+            var f1 = function(label,proptyName)
+            {
+                if($('.'+label)[0].checked){g.selectAll(".contour").attr("stroke-width", "0.3");}
+                else{g.selectAll(".contour").attr("stroke-width", "0");};
+                panelObj[proptyName]=$('.'+label)[0].checked;
+            };
+
+            fh(clClass,f1,'clClass');
+
+
+            var f2 =  function(label,proptyName)
+            {
+                if($('.'+label)[0].checked){g.selectAll(".Marker").attr("style", "visibility: visible;");}
+                else{g.selectAll(".Marker").attr("style", "visibility: hidden;");};
+                panelObj[proptyName]=$('.'+label)[0].checked;
+            };
+
+            fh(mClass,f2,'mClass');
+
+          };
+
+          AppendSettings(scatterGraph, s, f);
           break;
       };
 
@@ -256,6 +265,7 @@ scatterGraph.generateScatter=
     };
 
  
+    if(settingsObj.title==''){settingsObj.title=panelObj.fileName+'_'+settingsObj.x+'_'+settingsObj.y;}
     scatterGraph.createTitle(svg,settingsObj.title);//title last to paint to set it infront
     return true;
   },
