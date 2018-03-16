@@ -37,7 +37,7 @@ function updatePopup(jqObj, txt, eventFunctions)
 function attachGraphSettingsScript(panelObj,readerResult)
 {
 	var dataCols = d3.csvParse(readerResult);
-	colNames=Object.keys(dataCols[0]);colNames.unshift('');
+	colNames=Object.keys(dataCols[0]);
 
 	myFunc=function()
 	{
@@ -180,9 +180,8 @@ var scatter =
 {	
 	subg:
 	{
-		'':'',
-		'2D':['','Marker', 'Line', 'Area', 'Density Contour', 'Marker-Line', 'Timed'],
-		'3D':['','Marker', 'Line', 'Marker-Line', 'Surface', 'Timed'],		
+		'2D':['Marker', 'Line', 'Area', 'Density Contour', 'Marker-Line', 'Timed'],
+		'3D':['Marker', 'Line', 'Marker-Line', 'Surface', 'Timed'],		
 	},
 	
 	appendTableA:function()
@@ -211,10 +210,9 @@ var scatter =
 		var subg = this.subg;
 		customAppend($('.subgraphType'),createDropdown('Sub Graph Type',[subgraphTypeInput],Object.keys(subg))); 
 
-		$('.'+subgraphTypeInput).change(function()
-		{			
-			settingsObj.subgraphType=this.value;
-		
+		function foo(v)
+		{
+			settingsObj.subgraphType=v;		
 			var s = 		
 			'<table class="table borderless">' +	
 				'<colgroup>' +
@@ -230,18 +228,20 @@ var scatter =
 				'</tbody>' +						
 			'</table>';		
 			customAppend($('.tableAB'),s); //optionA
-			customAppend($('.tableABA'),createDropdown('Graph Options',['optionA'],subg[this.value])); //optionA
+			customAppend($('.tableABA'),createDropdown('Graph Options',['optionA'],subg[v])); //optionA
 			
-			if(this.value=='2D'){parent.appendAxesTable(2);}
-			else if(this.value=='3D'){parent.appendAxesTable(3);}
+			if(v=='2D'){parent.appendAxesTable(2);}
+			else if(v=='3D'){parent.appendAxesTable(3);}
 
-			$('.optionA').change(function()
+			function qqq(l)
 			{
 				customAppend($('.tableABB'),'');	
-				settingsObj.optionA=this.value;				
-			});
-
-		});			
+				settingsObj.optionA=l;			
+			};
+			updateDropdown('.optionA',qqq)	
+		};
+		updateDropdown('.'+subgraphTypeInput,foo);
+		
 	},
 
 	appendGraphOptionsA:function(title,classes,items)
@@ -285,8 +285,9 @@ var scatter =
 
 		var data = {};
 
-		$('.x-axis').change(function(){data.x=this.value;settingsObj.x=this.value;});
-		$('.y-axis').change(function(){data.y=this.value;settingsObj.y=this.value;});
+
+		updateDropdown('.x-axis',function(v){data.x=v;settingsObj.data[0]=data;});
+		updateDropdown('.y-axis',function(v){data.y=v;settingsObj.data[0]=data;});
 	},
 
 };
@@ -350,25 +351,20 @@ var histogram =
 				'</tbody>' +						
 			'</table>';		
 			customAppend($('.tableAA'),createDropdown('No. Of Bins (density)',['bins_count'],bin)); //bins_count
+			var foo = function(l){settingsObj.bins=l;};
+			updateDropdown('.bins_count',foo);
+			
 
 			customAppend($('.tableAB'),s); //optionA
 
 			//table AB
 			//table ABA
+			var data={};
 			customAppend($('.tableABA'),createDropdown('Column',['x-axis'],colNames));
-			$('.x-axis').change(function(){settingsObj.x=this.value;});		
-			//table ABB
+			var foo = function(l){data.x=l;settingsObj.data[0]=data;};
+			updateDropdown('.x-axis',foo);
+		
 
-
-
-			/*
-			customAppend($('.tableABA'),createDropdown('Graph Options',['optionA'],subg[this.value])); //optionA	
-
-			$('.optionA').change(function()
-			{
-				customAppend($('.tableABB'),'');	
-				settingsObj.optionA=this.value;				
-			});*/
 
 		});			
 	},
@@ -378,28 +374,6 @@ var histogram =
 		customAppend($('.tableAB'),createDropdown(title,classes,items));
 	},
 
-	appendAxesTable:function()//for kw, use x,y,z
-	{		
-		var s = '';	
-		
-		var vertical = 
-		'<table class="table borderless">' +
-			'<colgroup>' +
-				'<col class="col-md-8">' +	//c1						
-			'</colgroup>' +			
-			'<tbody>' +
-			'<tr class="axesContent">' + //r1
-				'<td>' + 					
-					createDropdown('Column 1', ['x-axis'],colNames) + 
-				'</td>' +	//r1c1					
-			'</tr>' +
-
-			'</tbody>' +
-		'</table>';	
-		customAppend($('.tableAA'),vertical);	
-
-		$('.x-axis').change(function(){settingsObj.x=this.value;});		
-	},
 };
 
 function submitSettings(panelObj,readerResult)
@@ -432,6 +406,12 @@ function createDropdown(label,extraClasses,items,etc)
 					itemsS +			
 		'</select>';
 	return s;
+};
+
+function updateDropdown(classLabel,fn)
+{
+	fn($(classLabel)[0].value);
+	$(classLabel).change(function(){fn($(classLabel)[0].value);});
 };
 
 

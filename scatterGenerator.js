@@ -49,13 +49,13 @@ scatterGraph.generateScatter=
       return false;
     };
 
-    if(!settingsObj.x)
+    if(!settingsObj.data[0].x)
     {
       alert('Please choose the x-axis.');
       return false;
     };
 
-    if(!settingsObj.y)
+    if(!settingsObj.data[0].y)
     {
       alert('Please choose the y-axis.');
       return false;
@@ -90,12 +90,12 @@ scatterGraph.generateScatter=
     function update(data)
     {    
       var xRng = {
-        min:d3.min(data, function(d) { return parseFloat(d[settingsObj.x]); }),
-        max:d3.max(data, function(d) { return parseFloat(d[settingsObj.x]); }),
+        min:d3.min(data, function(d) { return parseFloat(d[settingsObj.data[0].x]); }),
+        max:d3.max(data, function(d) { return parseFloat(d[settingsObj.data[0].x]); }),
       };
       var yRng = {
-        min:d3.min(data, function(d) { return parseFloat(d[settingsObj.y]); }),
-        max:d3.max(data, function(d) { return parseFloat(d[settingsObj.y]); }),
+        min:d3.min(data, function(d) { return parseFloat(d[settingsObj.data[0].y]); }),
+        max:d3.max(data, function(d) { return parseFloat(d[settingsObj.data[0].y]); }),
       };
       x.domain([xRng.min,xRng.max]);
       y.domain([yRng.min,yRng.max]);
@@ -108,14 +108,14 @@ scatterGraph.generateScatter=
           .data(data)
           .enter().append("circle")
           .attr("r", MarkerSize)
-          .attr("cx",function(d){return x(d[settingsObj.x]);})
-          .attr("cy",function(d){return y(d[settingsObj.y]);})
-          .attr('',function(d){var s='x:'+d[settingsObj.x] + '  y:'+d[settingsObj.y]; activateTooltipOnObject(s,this);});
+          .attr("cx",function(d){return x(d[settingsObj.data[0].x]);})
+          .attr("cy",function(d){return y(d[settingsObj.data[0].y]);})
+          .attr('',function(d){var s='x:'+d[settingsObj.data[0].x] + '  y:'+d[settingsObj.data[0].y]; activateTooltipOnObject(s,this);});
           break;
         case 'Line':
           var line = d3.line()
-          .x(function(d) { return x(d[settingsObj.x]); })
-          .y(function(d) { return y(d[settingsObj.y]); });
+          .x(function(d) { return x(d[settingsObj.data[0].x]); })
+          .y(function(d) { return y(d[settingsObj.data[0].y]); });
           g.append("path")
           .datum(data)
           .attr("fill", "none")
@@ -127,9 +127,9 @@ scatterGraph.generateScatter=
           break;
         case 'Area':
           var area = d3.area()
-          .x(function(d) {console.log(d[settingsObj.x]);return x(d[settingsObj.x]); })
+          .x(function(d) {console.log(d[settingsObj.data[0].x]);return x(d[settingsObj.data[0].x]); })
           .y0(paintHeight)
-          .y1(function(d) { return y(d[settingsObj.y]); });
+          .y1(function(d) { return y(d[settingsObj.data[0].y]); });
           g.append("path")
           .datum(data)
           .attr("fill", "steelblue")
@@ -142,9 +142,9 @@ scatterGraph.generateScatter=
           .data(data)
           .enter().append("circle")
           .attr("r", MarkerSize)
-          .attr("cx",function(d){return x(d[settingsObj.x]);})
-          .attr("cy",function(d){return y(d[settingsObj.y]);})
-          .attr('',function(d){var s='x:'+d[settingsObj.x] + '  y:'+d[settingsObj.y]; activateTooltipOnObject(s,this);});
+          .attr("cx",function(d){return x(d[settingsObj.data[0].x]);})
+          .attr("cy",function(d){return y(d[settingsObj.data[0].y]);})
+          .attr('',function(d){var s='x:'+d[settingsObj.data[0].x] + '  y:'+d[settingsObj.data[0].y]; activateTooltipOnObject(s,this);});
 
           function customColorGradient(start,end,interval)//rgb(230, 240, 250)
           { 
@@ -154,8 +154,8 @@ scatterGraph.generateScatter=
             return 'rgb('+h(0)+','+h(1)+','+h(2)+')';
           };
 
-          var contourObj=d3.contourDensity().x(function(d) { return x(d[settingsObj.x]); }).y(function(d) 
-          { return y(d[settingsObj.y]); }).size([pw, ph]).bandwidth(contourDensityValue)(data);//d3.max(contourObj,function(d){return d.value;})
+          var contourObj=d3.contourDensity().x(function(d) { return x(d[settingsObj.data[0].x]); }).y(function(d) 
+          { return y(d[settingsObj.data[0].y]); }).size([pw, ph]).bandwidth(contourDensityValue)(data);//d3.max(contourObj,function(d){return d.value;})
           var colorDivisor=d3.max(contourObj,function(d){return d.value;});//normalize contourObj values against its highest value
 
           g.insert("g", "g")
@@ -232,7 +232,7 @@ scatterGraph.generateScatter=
       .attr("x", paintWidth)
       .attr("y", -6)
       .style("text-anchor", "end")
-      .text(settingsObj.x);
+      .text(settingsObj.data[0].x);
 
       g.append("g")
       .attr("class", "axis axis--y")
@@ -243,7 +243,7 @@ scatterGraph.generateScatter=
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .text(settingsObj.y);
+      .text(settingsObj.data[0].y);
 
       svg.call(zoom).transition();
 
@@ -257,15 +257,15 @@ scatterGraph.generateScatter=
       yt=t.rescaleY(y);  //y is the scale range defined earlier
       var transitionInfo=g.transition().duration(100);
       g.selectAll("circle").transition(transitionInfo)
-        .attr("cx", function(d) { return xt(d[settingsObj.x]);})   
-        .attr("cy", function(d) { return yt(d[settingsObj.y]);});   
+        .attr("cx", function(d) { return xt(d[settingsObj.data[0].x]);})   
+        .attr("cy", function(d) { return yt(d[settingsObj.data[0].y]);});   
       g.select(".axis--x").transition(transitionInfo).call(xAxis.scale(xt)); //g.select(".axis--x").call(xAxis.scale(xt));
       g.select(".axis--y").transition(transitionInfo).call(yAxis.scale(yt));
       g.selectAll("path").transition(transitionInfo).attr("transform", d3.event.transform);//for density contour
     };
 
  
-    if(settingsObj.title==''){settingsObj.title=panelObj.fileName+'_'+settingsObj.x+'_'+settingsObj.y;}
+    if(settingsObj.title==''){settingsObj.title=panelObj.fileName+'_'+settingsObj.data[0].x+'_'+settingsObj.data[0].y;}
     scatterGraph.createTitle(svg,settingsObj.title);//title last to paint to set it infront
     return true;
   },
