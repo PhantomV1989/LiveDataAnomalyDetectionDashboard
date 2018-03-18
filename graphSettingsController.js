@@ -541,10 +541,10 @@ var abstractGraph=//var newObject = jQuery.extend(true, {}, oldObject);
 	{
 		svg.append("text")
 		.attr("x",this.svgInfo.width/2)
-		.attr("y",30)
+		.attr("y",35)
 		.attr("font-family","Verdana")//text-anchor="middle"
 		.attr("text-anchor","middle")
-		.attr("font-size",'25')
+		.attr("font-size",'18')
 		.html(text);
 	},
 };

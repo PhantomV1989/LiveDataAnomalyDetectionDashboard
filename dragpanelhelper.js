@@ -17,7 +17,7 @@ var unitSize = unitSize,//unitSize declared in globalVariables.js
 gap=5;//5px
 
 var panelCount=0;//to keep track of panel id
-var panelColor='rgb(200,100,100)';
+var panelColor='rgb(100,30,30)';
 
 var panelInfoList=
 [

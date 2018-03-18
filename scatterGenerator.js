@@ -4,7 +4,7 @@ var unitSize = unitSize;
 
 var MarkerSize = unitSize/150;
 var lineThickness= unitSize/200;
-var contourDensityValue=6;
+var contourDensityValue=4;
 
 var resolution = 1;
 
@@ -42,6 +42,11 @@ scatterGraph.generateScatter=
 
   generate2D:function(panelObj,readerResult,settingsObj)
   {
+    var panelBGColor=panelObj[0].style.backgroundColor;
+    var colorSet = colorSphereV2.GetHarmonicColorsFromRGB(panelBGColor,6);
+    colorSet.shift();
+
+    var getRngColor = function(){return colorSet[Math.floor(Math.random() * colorSet.length)]};
 
     if(!settingsObj.optionA)
     {
@@ -104,7 +109,7 @@ scatterGraph.generateScatter=
       switch(settingsObj.optionA)//g2d:['','Marker', 'Line', 'Marker-Line', 'Timed']
       {
         case 'Marker':
-          g.append("g").attr("class","Marker").selectAll("g")
+          g.append("g").attr("class","Marker").attr("fill",getRngColor()).selectAll("g")
           .data(data)
           .enter().append("circle")
           .attr("r", MarkerSize)
@@ -136,7 +141,7 @@ scatterGraph.generateScatter=
           .attr("d", area);
           break;
         case 'Density Contour':
-          var startColor=panelObj[0].style.backgroundColor;
+          
 
            g.append("g").attr("class","Marker").selectAll("g")
           .data(data)
@@ -146,40 +151,48 @@ scatterGraph.generateScatter=
           .attr("cy",function(d){return y(d[settingsObj.data[0].y]);})
           .attr('',function(d){var s='x:'+d[settingsObj.data[0].x] + '  y:'+d[settingsObj.data[0].y]; activateTooltipOnObject(s,this);});
 
-          function customColorGradient(start,end,interval)//rgb(230, 240, 250)
-          { 
-            var startColor=start.split("(")[1].split(")")[0].split(","),
-            endColor=end.split("(")[1].split(")")[0].split(",");
-            function h(n){return ((+endColor[n])-(+startColor[n]))*interval+(+startColor[n]);};
-            return 'rgb('+h(0)+','+h(1)+','+h(2)+')';
-          };
-
-          var contourObj=d3.contourDensity().x(function(d) { return x(d[settingsObj.data[0].x]); }).y(function(d) 
-          { return y(d[settingsObj.data[0].y]); }).size([pw, ph]).bandwidth(contourDensityValue)(data);//d3.max(contourObj,function(d){return d.value;})
-          var colorDivisor=d3.max(contourObj,function(d){return d.value;});//normalize contourObj values against its highest value
-
-          g.insert("g", "g")
+       
+          var group = g.append("g", "g")
           .attr("class","contour")
           .attr("fill", "none")
           .attr("stroke", "#000")//<-----contour line setting
           .attr("stroke-width", 0.3)
-          .attr("stroke-linejoin", "round")
-          .selectAll("path")
-          .data(contourObj)
-          .enter().append("path")
-          .attr("fill",  function(d) {return customColorGradient(startColor,'rgb(0,255,0)',d.value/colorDivisor);})
-          .attr("d", d3.geoPath());
+          .attr("stroke-linejoin", "round");
+
+          var contourDensity = [];
+          for(i=1;i<10;i++)
+          {
+            contourDensity.push(i*2);
+             var contourObj=d3.contourDensity().x(function(d) { return x(d[settingsObj.data[0].x]); }).y(function(d) 
+            { return y(d[settingsObj.data[0].y]); }).size([pw, ph]).bandwidth(i*2)(data);//d3.max(contourObj,function(d){return d.value;})
+          
+
+            group.append("g").attr("class",panelObj[0].id+"_density "+i*2)
+            .attr("visibility",function(){return i*2==8?"visible":"hidden"})
+            .selectAll("path")
+            .data(contourObj)
+            .enter().append("path")
+            .attr("fill",  function(d){return getRngColor();})
+            .attr('style','opacity: '+1/contourObj.length+';')
+            .attr("d", d3.geoPath());
+          }       
+
 
           // the following part for external settings
           var clClass = panelObj[0].id + 'cl';panelObj.clClass=true;
           var mClass = panelObj[0].id + 'M';panelObj.mClass=true;
           var checkboxContourlines = CreateCheckBox('Contour Lines', clClass);
           var checkboxMarkers = CreateCheckBox('Marker',mClass);
+
+       
+          var densityCloudDropdown = createDropdown('Density Cloud',[panelObj[0].id + 'contour_density_cloud'],contourDensity);
+          panelObj.contourDensity=8;
          //AppendSettings(graphObj, content, event)
           var s = 
           '<div>' +
-          checkboxContourlines+'<br>' +
-          checkboxMarkers+
+          checkboxContourlines +'<br>' +
+          checkboxMarkers +'<br>' +
+          densityCloudDropdown
           '</div>';
 
           var f = function()
@@ -195,6 +208,15 @@ scatterGraph.generateScatter=
                 });
               $('.'+label).change(function(){f1(label,proptyName);});
 
+
+
+              $('.'+panelObj[0].id + 'contour_density_cloud')[0].value=panelObj.contourDensity;
+              $('.'+panelObj[0].id + 'contour_density_cloud').change(
+                function(){
+                 $('.'+panelObj[0].id+"_density").attr("visibility","hidden");
+                 $('.'+panelObj[0].id+"_density."+this.value).attr("visibility","visible");
+                 panelObj.contourDensity=this.value;
+                 })
             };
 
             var f1 = function(label,proptyName)
