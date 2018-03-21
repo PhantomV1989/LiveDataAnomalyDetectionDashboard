@@ -8,23 +8,68 @@ var contourDensityValue=4;
 
 var resolution = 1;
 
+
+/* Unresolved bug list
+1) when zooming on next graph, the zoomed properties of last graphs (cx, cy) will be bugged
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+function AutomatedDateTimeParser(dataSample)  //['1pm', '2pm']
+{
+  /*
+  //a datetime parser b smart estimation
+  var lineA=dataSample[0];
+  var lineB = dataSample[1];
+
+  var aSplit = [], bSplit = [];
+
+  if(lineA.search(' ')>0)
+  {
+    aSplit = lineA.split(' ');
+  }
+  else if (lineA.search(',')>0)
+  {
+    aSplit = lineA.split(',');
+  };
+
+  var twelveHourFormat = aSplit.find(function(e){
+    var f(s){return e.toLowerCase().search(s)>0?true:false;};
+    return f('am')||f('pm')?true:false;
+  });*/
+  return "";
+};
+
+
 var scatterGraph=jQuery.extend(true, {}, abstractGraph);//object inheritance
 
 scatterGraph.generateScatter=
 {
-  generate:function(panelObj,readerResult,settingsObj)
+  generate:function(panelObj,dataCols,settingsObj)
   {    
     if(settingsObj.subgraphType)
     {
       switch(settingsObj.subgraphType)
       {
         case '2D':
-          if(scatterGraph.generateScatter.generate2D(panelObj,readerResult,settingsObj))
+          if(scatterGraph.generateScatter.generate2D(panelObj,dataCols,settingsObj))
             return true;
           else
             return false
         case '3D':
-          if(scatterGraph.generateScatter.generate3D(panelObj,readerResult,settingsObj))
+          if(scatterGraph.generateScatter.generate3D(panelObj,dataCols,settingsObj))
             return true;
           else
             return false
@@ -40,13 +85,33 @@ scatterGraph.generateScatter=
     }
   },
 
-  generate2D:function(panelObj,readerResult,settingsObj)
+  generate2D:function(panelObj,dataCols,settingsObj)
   {
     var panelBGColor=panelObj[0].style.backgroundColor;
-    var colorSet = colorSphereV2.GetHarmonicColorsFromRGB(panelBGColor,6);
+    var colorSet = colorSphereV2.GetHarmonicColorsFromRGB(panelBGColor,7);
     colorSet.shift();
 
     var getRngColor = function(){return colorSet[Math.floor(Math.random() * colorSet.length)]};
+    
+
+    function xaxisStyle(xaxisObj)
+    {
+      xaxisObj
+      .selectAll(".tick text")
+      .attr("transform", "rotate(90) translate(5,-15)")
+      .attr("style","text-anchor: start")      
+      .attr('font-size','6');
+      return;
+    };
+
+    function yaxisStyle(yaxisObj)
+    {
+      yaxisObj
+      .selectAll(".tick text")    
+      .attr("style","text-anchor: start")      
+      .attr('font-size','6');
+      return;
+    };
 
     if(!settingsObj.optionA)
     {
@@ -56,8 +121,8 @@ scatterGraph.generateScatter=
 
     if(!settingsObj.data[0].x)
     {
-      alert('Please choose the x-axis.');
-      return false;
+      //alert('Please choose the x-axis.');
+      //return false;
     };
 
     if(!settingsObj.data[0].y)
@@ -73,8 +138,8 @@ scatterGraph.generateScatter=
         pw=scatterGraph.svgInfo.paintWidth*resolution,
         ph=scatterGraph.svgInfo.paintHeight*resolution;
 
-    var x = d3.scaleLinear().range([0, pw]),
-    y = d3.scaleLinear().range([ph, 0]);
+    var x = settingsObj.xtimeparse?d3.scaleTime().range([0, pw]):d3.scaleLinear().range([0, pw]);
+    var y = d3.scaleLinear().range([ph, 0]);
 
     var xAxis = d3.axisBottom(x),
     yAxis = d3.axisLeft(y);
@@ -88,22 +153,50 @@ scatterGraph.generateScatter=
     var g = svg.append("g")
     .attr("transform", "translate(" + (1-graphScaleWidth)/2*w + "," + (1-graphScaleHeight)/2*(h*1.2) + ")");//left top
 
-    var dataCols = d3.csvParse(readerResult);
+   
 
     update(dataCols);
 
     function update(data)
     {    
+
+      //AutomatedDateTimeParser(data.map(x=>x[settingsObj.data[0].x]));
+      if(!settingsObj.data[0].x)
+      {
+        var uniqueKey = 'count';
+        var length = data.map(x=>x[settingsObj.data[0].y]).length;
+        var incrementalArray = [...Array(length).keys()];
+
+        for (i=0;i<length;i++)
+        {
+          data[i][uniqueKey]=incrementalArray[i];
+        }
+        settingsObj.data[0].x = uniqueKey;
+      };
+
+
+
+      if(settingsObj.xtimeparse)
+      {
+        var parseDate = d3.timeParse(settingsObj.xtimeparse);
+        for(var i in data)
+        {
+          data[i][settingsObj.data[0].x]=parseDate(data[i][settingsObj.data[0].x]);
+        };
+      };
+
+
       var xRng = {
         min:d3.min(data, function(d) { return parseFloat(d[settingsObj.data[0].x]); }),
         max:d3.max(data, function(d) { return parseFloat(d[settingsObj.data[0].x]); }),
       };
       var yRng = {
-        min:d3.min(data, function(d) { return parseFloat(d[settingsObj.data[0].y]); }),
+        min:d3.min(data, function(d) { 
+          return parseFloat(d[settingsObj.data[0].y]); }),
         max:d3.max(data, function(d) { return parseFloat(d[settingsObj.data[0].y]); }),
       };
-      x.domain([xRng.min,xRng.max]);
-      y.domain([yRng.min,yRng.max]);
+     x.domain(d3.extent(data, function(d) { return d[settingsObj.data[0].x]; }));
+     y.domain([yRng.min,yRng.max]);
 
      
       switch(settingsObj.optionA)//g2d:['','Marker', 'Line', 'Marker-Line', 'Timed']
@@ -113,10 +206,12 @@ scatterGraph.generateScatter=
           .data(data)
           .enter().append("circle")
           .attr("r", MarkerSize)
-          .attr("cx",function(d){return x(d[settingsObj.data[0].x]);})
+          .attr("cx",function(d){
+            return x(d[settingsObj.data[0].x]);})
           .attr("cy",function(d){return y(d[settingsObj.data[0].y]);})
           .attr('',function(d){var s='x:'+d[settingsObj.data[0].x] + '  y:'+d[settingsObj.data[0].y]; activateTooltipOnObject(s,this);});
           break;
+
         case 'Line':
           var line = d3.line()
           .x(function(d) { return x(d[settingsObj.data[0].x]); })
@@ -130,6 +225,7 @@ scatterGraph.generateScatter=
           .attr("stroke-width", lineThickness)
           .attr("d", line);
           break;
+
         case 'Area':
           var area = d3.area()
           .x(function(d) {console.log(d[settingsObj.data[0].x]);return x(d[settingsObj.data[0].x]); })
@@ -140,9 +236,8 @@ scatterGraph.generateScatter=
           .attr("fill", "steelblue")
           .attr("d", area);
           break;
-        case 'Density Contour':
-          
 
+        case 'Density Contour':
            g.append("g").attr("class","Marker").selectAll("g")
           .data(data)
           .enter().append("circle")
@@ -150,7 +245,6 @@ scatterGraph.generateScatter=
           .attr("cx",function(d){return x(d[settingsObj.data[0].x]);})
           .attr("cy",function(d){return y(d[settingsObj.data[0].y]);})
           .attr('',function(d){var s='x:'+d[settingsObj.data[0].x] + '  y:'+d[settingsObj.data[0].y]; activateTooltipOnObject(s,this);});
-
        
           var group = g.append("g", "g")
           .attr("class","contour")
@@ -177,13 +271,11 @@ scatterGraph.generateScatter=
             .attr("d", d3.geoPath());
           }       
 
-
           // the following part for external settings
           var clClass = panelObj[0].id + 'cl';panelObj.clClass=true;
           var mClass = panelObj[0].id + 'M';panelObj.mClass=true;
           var checkboxContourlines = CreateCheckBox('Contour Lines', clClass);
           var checkboxMarkers = CreateCheckBox('Marker',mClass);
-
        
           var densityCloudDropdown = createDropdown('Density Cloud',[panelObj[0].id + 'contour_density_cloud'],contourDensity);
           panelObj.contourDensity=8;
@@ -208,8 +300,6 @@ scatterGraph.generateScatter=
                 });
               $('.'+label).change(function(){f1(label,proptyName);});
 
-
-
               $('.'+panelObj[0].id + 'contour_density_cloud')[0].value=panelObj.contourDensity;
               $('.'+panelObj[0].id + 'contour_density_cloud').change(
                 function(){
@@ -228,48 +318,44 @@ scatterGraph.generateScatter=
 
             fh(clClass,f1,'clClass');
 
-
             var f2 =  function(label,proptyName)
             {
                 if($('.'+label)[0].checked){g.selectAll(".Marker").attr("style", "visibility: visible;");}
                 else{g.selectAll(".Marker").attr("style", "visibility: hidden;");};
                 panelObj[proptyName]=$('.'+label)[0].checked;
             };
-
             fh(mClass,f2,'mClass');
-
           };
 
           AppendSettings(scatterGraph, s, f);
           break;
       };
 
-      g.append("g")
+      var xx= g.append("g")
       .attr("class", "axis axis--x")
       .attr("transform", "translate(0," + unitSize*graphScaleHeight + ")")
       .attr("width","100%")
-      .call(xAxis)
-      .append("text")
-      .attr("class", "label")
+      .call(xAxis);    
+      xx.append("text")
       .attr("x", paintWidth)
       .attr("y", -6)
-      .style("text-anchor", "end")
+      .attr("style","text-anchor: end")
+      .attr("font-size","6")
       .text(settingsObj.data[0].x);
+      xaxisStyle(xx);
 
-      g.append("g")
+      var yy = g.append("g")
       .attr("class", "axis axis--y")
-      .call(yAxis)
-      .append("text")
-      .attr("class", "label")
-      .attr("transform", "rotate(-90)")
+      .call(yAxis);
+      yy.append("text")
       .attr("y", 6)
       .attr("dy", ".71em")
-      .style("text-anchor", "end")
+      .attr("style","text-anchor: start")
+      .attr("font-size","6")
       .text(settingsObj.data[0].y);
+      yaxisStyle(yy);
 
-      svg.call(zoom).transition();
-
-     
+      svg.call(zoom).transition();     
     };
 
     function zoomed() 
@@ -278,21 +364,24 @@ scatterGraph.generateScatter=
       xt = t.rescaleX(x),
       yt=t.rescaleY(y);  //y is the scale range defined earlier
       var transitionInfo=g.transition().duration(100);
-      g.selectAll("circle").transition(transitionInfo)
-        .attr("cx", function(d) { return xt(d[settingsObj.data[0].x]);})   
-        .attr("cy", function(d) { return yt(d[settingsObj.data[0].y]);});   
-      g.select(".axis--x").transition(transitionInfo).call(xAxis.scale(xt)); //g.select(".axis--x").call(xAxis.scale(xt));
-      g.select(".axis--y").transition(transitionInfo).call(yAxis.scale(yt));
+ 
+
+      var xx= g.select(".axis--x").transition(transitionInfo).call(xAxis.scale(xt));
+      xaxisStyle(xx);
+
+      var yy = g.select(".axis--y").transition(transitionInfo).call(yAxis.scale(yt));
+      yaxisStyle(yy);
+
+      g.selectAll("circle").transition(transitionInfo).attr("transform", d3.event.transform);//for density contour
       g.selectAll("path").transition(transitionInfo).attr("transform", d3.event.transform);//for density contour
     };
-
  
     if(settingsObj.title==''){settingsObj.title=panelObj.fileName+'_'+settingsObj.data[0].x+'_'+settingsObj.data[0].y;}
     scatterGraph.createTitle(svg,settingsObj.title);//title last to paint to set it infront
     return true;
   },
 
-  generate3D:function(panelObj,readerResult,settingsObj)
+  generate3D:function(panelObj,dataCols,settingsObj)
   {alert('3D not done');},
 };
 

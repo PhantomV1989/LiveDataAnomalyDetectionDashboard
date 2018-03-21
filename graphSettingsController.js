@@ -37,7 +37,30 @@ function updatePopup(jqObj, txt, eventFunctions)
 function attachGraphSettingsScript(panelObj,readerResult)
 {
 	var dataCols = d3.csvParse(readerResult);
+	//delete w['Year']
+	function TrimKeys(myDict)
+	{
+		var k = Object.keys(myDict);
+		for(var i in k)
+		{			
+			if(k[i][0]==' ')
+			{
+				var a=5;
+			};
+			var s = k[i].trim();
+			if(s!=k[i])
+			{
+				myDict[s]=myDict[k[i]];
+				delete myDict[k[i]];
+			};
+
+						
+		}
+		return myDict;
+	};
+	dataCols = dataCols.map(x=>TrimKeys(x));
 	colNames=Object.keys(dataCols[0]);
+	colNames.unshift('');
 
 	myFunc=function()
 	{
@@ -45,7 +68,7 @@ function attachGraphSettingsScript(panelObj,readerResult)
 		$('button#submit').click(function()
 		{
 			$('.cd-popup').removeClass('is-visible');
-			submitSettings(panelObj,readerResult);
+			submitSettings(panelObj,dataCols);
 		});
 	};
 
@@ -263,13 +286,17 @@ var scatter =
 		var vertical = 
 		'<table class="table borderless">' +
 			'<colgroup>' +
-				'<col class="col-md-8">' +	//c1						
+				'<col class="col-md-4">' +	//c1		
+				'<col class="col-md-4">' +	//c2					
 			'</colgroup>' +			
 			'<tbody>' +
 			'<tr class="axesContent">' + //r1
 				'<td>' + 					
 					createDropdown('x-axis', ['x-axis'],colNames) + 
-				'</td>' +	//r1c1					
+				'</td>' +	//r1c1			
+				'<td>' + 					
+					CreateTextInput('Time Parse Format',['xtimeParser']) + 
+				'</td>' +	//r1c2					
 			'</tr>' +
 			'<tr class="axesContent">' + //r2
 				'<td>' + 					
@@ -282,6 +309,7 @@ var scatter =
 			'</tbody>' +
 		'</table>';	
 		customAppend($('.tableAA'),vertical);	
+		$('.xtimeParser').change(function(){settingsObj.xtimeparse=this.value;});
 
 		var data = {};
 
@@ -297,7 +325,6 @@ var histogram =
 {	
 	subg:
 	{
-		'':'',
 		'Simple':['','Gaussian'], //kernel density estimation
 		'Pyramid':[],		
 		'Stacked':[],		
@@ -332,9 +359,9 @@ var histogram =
 		var bin = this.bin;
 		customAppend($('.subgraphType'),createDropdown('Sub Graph Type',[subgraphTypeInput],Object.keys(subg))); 
 
-		$('.'+subgraphTypeInput).change(function()
-		{			
-			settingsObj.subgraphType=this.value;
+		function foo(v)
+		{
+			settingsObj.subgraphType=v;
 		
 			var s = 	//1 col 2 rows for AB	
 			'<table class="table borderless">' +	
@@ -351,8 +378,8 @@ var histogram =
 				'</tbody>' +						
 			'</table>';		
 			customAppend($('.tableAA'),createDropdown('No. Of Bins (density)',['bins_count'],bin)); //bins_count
-			var foo = function(l){settingsObj.bins=l;};
-			updateDropdown('.bins_count',foo);
+			var boo = function(l){settingsObj.bins=l;};
+			updateDropdown('.bins_count',boo);
 			
 
 			customAppend($('.tableAB'),s); //optionA
@@ -361,12 +388,12 @@ var histogram =
 			//table ABA
 			var data={};
 			customAppend($('.tableABA'),createDropdown('Column',['x-axis'],colNames));
-			var foo = function(l){data.x=l;settingsObj.data[0]=data;};
-			updateDropdown('.x-axis',foo);
-		
+			var zoo = function(l){data.x=l;settingsObj.data[0]=data;};
+			updateDropdown('.x-axis',zoo);		
+		};
+		updateDropdown('.'+subgraphTypeInput,foo);
 
-
-		});			
+	
 	},
 
 	appendGraphOptionsA:function(title,classes,items)
@@ -376,12 +403,12 @@ var histogram =
 
 };
 
-function submitSettings(panelObj,readerResult)
+function submitSettings(panelObj,dataCols)
 {
 	var graphFunction=graphTypeController();
 	if(graphFunction)
 	{
-		if(!graphFunction(panelObj,readerResult,settingsObj))
+		if(!graphFunction(panelObj,dataCols,settingsObj))
 		 {$('.cd-popup').addClass('is-visible');}		
 	}
 	else alert('Please Choose a graph type.');		
@@ -407,6 +434,24 @@ function createDropdown(label,extraClasses,items,etc)
 		'</select>';
 	return s;
 };
+
+
+function CreateTextInput(label,extraClasses,etc)
+{
+	var classesS = 'dropdown';
+	var itemsS = '';
+	for(var c in extraClasses){classesS += ' ' + extraClasses[c];}
+	var s = 
+		'<label>' + label + '</label>' + 
+		'<input placeholder="Optional" style="margin-left: 1vw;" class="' + classesS +'"'+etc+'>';
+	return s;
+};
+
+
+
+
+
+
 
 function updateDropdown(classLabel,fn)
 {
@@ -539,9 +584,10 @@ var abstractGraph=//var newObject = jQuery.extend(true, {}, oldObject);
 
 	createTitle:function(svg,text)
 	{
+		text =  text.slice(0,11);
 		svg.append("text")
 		.attr("x",this.svgInfo.width/2)
-		.attr("y",35)
+		.attr("y",30)
 		.attr("font-family","Verdana")//text-anchor="middle"
 		.attr("text-anchor","middle")
 		.attr("font-size",'18')
