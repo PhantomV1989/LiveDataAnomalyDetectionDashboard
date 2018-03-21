@@ -9,24 +9,6 @@ var contourDensityValue=4;
 var resolution = 1;
 
 
-/* Unresolved bug list
-1) when zooming on next graph, the zoomed properties of last graphs (cx, cy) will be bugged
-
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
 function AutomatedDateTimeParser(dataSample)  //['1pm', '2pm']
 {
   /*
