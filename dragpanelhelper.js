@@ -17,7 +17,9 @@ var unitSize = unitSize,//unitSize declared in globalVariables.js
 gap=5;//5px
 
 var panelCount=0;//to keep track of panel id
-var panelColor='rgb(100,30,30)';
+var panelColor='rgb(0,255,255)';
+
+
 
 var panelInfoList=
 [
@@ -131,12 +133,12 @@ var overheads =
     $grid:$('.grid'),
   },
 
-  initiate:function()
+  initiate:function(gridName)//gridName = '.grid'
   {
     // START PACKERY
     // ---------------------------------------------
 
-    var $grid = $('.grid').packery({
+    var $grid = $(gridName).packery({
     itemSelector: '.grid-item',
     gutter: '.gutter-sizer',
     percentPosition: true
@@ -259,23 +261,351 @@ var panelling =
     $grid:overheads.sharedVariables.$grid,//panelling must happen after overheads.initiate
   },
 
-  createPanelTemplateButton:function(no)
-  {
-    var panelInfo = panelInfoList[no];
-    var w=panelInfo.w,
-    h=panelInfo.h,
-    panelButtonID=panelInfo.panelButtonID,
-    panelClassType=panelInfo.panelClassType;
-    $('#panelSelectionWindow').append('<button type="button" id="'+panelInfo.panelButtonID+'" class="btn btn-new-panel">'+panelInfo.panelButtonText+'</button>');
-    this.createPanelTemplate(w,h,panelButtonID,panelClassType);   
+
+
+  createRealTimeDataPanel:function(myData,gridName)
+  {    
+    var myPanelArray = myData.map(x=>[x[0], x[1],this.createPanel(panelInfoList[0],gridName)]);
+
+    myPanelArray.forEach(function(dp)
+    {      
+      var title = dp[0];
+      var dataCol = dp[1];
+      var panelObj = dp[2];
+
+      var panelBGColor=panelObj[0].style.backgroundColor;   
+
+      var data = [];     
+      var globalX = 0;
+      var duration = 10;
+      var max = 500;
+      var step = 1;
+
+      var svg = scatterGraph.generateSVG(panelObj)//this line must come first before svgInfo
+          w=scatterGraph.svgInfo.width,
+          h=scatterGraph.svgInfo.height,
+          width=scatterGraph.svgInfo.paintWidth*resolution,
+          height=scatterGraph.svgInfo.paintHeight*resolution;
+
+
+      var maxY = d3.max(dataCol, function(d) { return parseFloat(d); })
+      var minY = d3.min(dataCol, function(d) { return parseFloat(d); })
+      var x = d3.scaleLinear().domain([0, 500]).range([0, width]);
+      var y = d3.scaleLinear().domain([minY, maxY]).range([h*8/9, 0]);
+      // -----------------------------------
+
+      var lineArea = d3.area()
+                .x(function(d){ return x(d.x); })
+                .y0(y(0))
+                .y1(function(d){ return y(d.y); })
+                .curve(d3.curveCardinal);
+
+
+      var area = d3.area()
+          .x(function(d) {return x(d.x); })
+          .y0(y(minY))
+          .y1(function(d) { return y(d.y); });
+      // -----------------------------------
+      // Draw the axis
+      var xAxis = d3.axisBottom(x),
+      yAxis = d3.axisLeft(y);
+      //var xAxis = d3.axisBottom().scale(x);
+      //var axisX = svg.append('g').attr('class', 'x axis').attr('transform', 'translate(0, 500)').call(xAxis);
+
+      var g = svg.append("g")
+      .attr("transform", "translate(" + (1-graphScaleWidth)/2*w + "," + (1-graphScaleHeight)/2*(h*1.2) + ")");//left top
+
+      var xx= g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + unitSize*graphScaleHeight + ")")
+      .attr("width","100%")
+      .call(xAxis);       
+
+      var yy = g.append("g")
+      .attr("class", "axis axis--y")
+      .call(yAxis);
+    
+
+
+
+    
+      // Append the holder for line svg and fill area     
+      var areaPath = svg.append('path');
+
+      var cloneData = []
+      // Main loop
+      function tick() {
+        // Generate new data
+        if(cloneData.length==0) cloneData = dataCol.map(x=>x);
+
+        var point = {
+          x: globalX,
+          y: cloneData.shift()
+        };
+        data.push(point);
+        globalX += step;
+        
+        // Draw new fill area
+        areaPath.datum(data)
+          .attr('fill', 'steelblue')
+          .attr('d', area);
+        // Shift the svg left
+        var newX_domain = [globalX - (max - step), globalX];
+
+        x.domain(newX_domain);
+        xx.transition()
+           .duration(duration)
+           .ease(d3.easeLinear,2)
+           .call(xAxis);       
+        areaPath.attr('transform', null)
+          .transition()
+          .duration(duration)
+          .ease(d3.easeLinear,2)
+          .attr('transform', 'translate(' + x(globalX - max) + ')')
+          .on('end', tick)
+        // Remote old data (max 50 points)
+        if (data.length > 800) data.shift();
+      }
+
+
+      text = title.slice(0,11);
+      svg.append("text")
+      .attr("x",width/2)
+      .attr("y",30)
+      .attr("font-family","Verdana")//text-anchor="middle"
+      .attr("text-anchor","middle")
+      .attr("font-size",'18')
+      .html(text);
+
+      tick();    
+
+    });
+    
   },
 
-  createPanelTemplate:function(w,h,panelButtonID,panelClassType)
-  {
-    $grid=this.sharedVariables.$grid;
-    var thisNamespace=this;
-    $('#'+panelButtonID).click(function() 
+  createRealTimeDataPanelWithTrigger:function(myData,gridName,gridName2, trigger)
+  {    
+    var myPanelArray = myData.map(x=>[x[0], x[1],this.createPanel(panelInfoList[0],gridName)]);
+
+    function GenerateGraph(dp,domainXY)
     {
+      var title = dp[0];
+      var dataCol = dp[1];
+      var panelObj = dp[2];
+      var triggerCount = 0;
+
+      var panelBGColor=panelObj[0].style.backgroundColor;   
+
+      var data = [];     
+      var globalX = 0;
+      var duration = 10;
+      var max = 500;
+      var step = 1;
+
+      var svg = scatterGraph.generateSVG(panelObj)//this line must come first before svgInfo
+          w=scatterGraph.svgInfo.width,
+          h=scatterGraph.svgInfo.height,
+          width=scatterGraph.svgInfo.paintWidth*resolution,
+          height=scatterGraph.svgInfo.paintHeight*resolution;
+
+
+     
+      var g = svg.append("g")
+      .attr("transform", "translate(" + (1-graphScaleWidth)/2*w + "," + (1-graphScaleHeight)/2*(h*1.2) + ")");//left top
+
+      if(typeof domainXY=='undefined')
+      {        
+        var maxY = d3.max(dataCol, function(d) { return parseFloat(d); })
+        var minY = d3.min(dataCol, function(d) { return parseFloat(d); })
+
+        var x = d3.scaleLinear().domain([0, 500]).range([0, width]);
+        var y = d3.scaleLinear().domain([minY, maxY]).range([h*8/9, 0]);
+        // -----------------------------------
+          // Draw the axis
+        var xAxis = d3.axisBottom(x),
+        yAxis = d3.axisLeft(y);
+        //var xAxis = d3.axisBottom().scale(x);
+        //var axisX = svg.append('g').attr('class', 'x axis').attr('transform', 'translate(0, 500)').call(xAxis);
+
+        var xx= g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + unitSize*graphScaleHeight + ")")
+        .attr("width","100%")
+        .call(xAxis);       
+
+        var yy = g.append("g")
+        .attr("class", "axis axis--y")
+        .call(yAxis);
+
+
+        var area = d3.area()
+            .x(function(d) {return x(d.x); })
+            .y0(y(minY))
+            .y1(function(d) { return y(d.y); });
+        // -----------------------------------
+        // Append the holder for line svg and fill area
+        var areaPath = svg.append('path');
+
+        var cloneData = [];
+        // Main loop
+        function tick() {
+          // Generate new data
+          if(cloneData.length==0) cloneData = dataCol.map(x=>x);
+
+          var point = {
+            x: globalX,
+            y: cloneData.shift()
+          };
+          data.push(point);
+          globalX += step;
+          
+          // Draw new fill area
+          areaPath.datum(data)
+            .attr('fill', 'steelblue')
+            .attr('d', area);
+          // Shift the svg left
+          var newX_domain = [globalX - (max - step), globalX];
+          x.domain(newX_domain);
+          xx.transition()
+             .duration(duration)
+             .ease(d3.easeLinear,2)
+             .call(xAxis);       
+          areaPath.attr('transform', null)
+            .transition()
+            .duration(duration)
+            .ease(d3.easeLinear,2)
+            .attr('transform', 'translate(' + x(globalX - max) + ')')
+            .on('end', tick)
+          // Remote old data (max 50 points)
+          if (data.length > 800) data.shift();
+
+          var myPath = this;
+          if(triggerCount==trigger && Math.random()>0.7) //x% chance of triggering
+          {            
+            var outputPanel = panelling.createPanel(panelInfoList[0],gridName2);
+
+            //asynchrounous function, Impt! data format has changed totally
+            setTimeout(GenerateGraph([dp[0],data,outputPanel],[newX_domain,[minY, maxY]]),1000);
+
+            myPath.style.fill="red";
+            $(myPath).one("webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend",
+            function()
+            {
+              myPath.style.fill="steelblue";
+            });
+          }
+          triggerCount++;
+        }
+
+
+        text =  title.slice(0,11);
+        svg.append("text")
+        .attr("x",width/2)
+        .attr("y",30)
+        .attr("font-family","Verdana")//text-anchor="middle"
+        .attr("text-anchor","middle")
+        .attr("font-size",'18')
+        .html(text);
+
+        tick();   
+
+      }
+      else
+      {
+      
+
+        var x = d3.scaleLinear().domain(domainXY[0]).range([0, width]);
+        var y = d3.scaleLinear().domain(domainXY[1]).range([height, 0]);
+        // -----------------------------------
+          // Draw the axis
+        var xAxis = d3.axisBottom(x),
+        yAxis = d3.axisLeft(y);
+        //var xAxis = d3.axisBottom().scale(x);
+        //var axisX = svg.append('g').attr('class', 'x axis').attr('transform', 'translate(0, 500)').call(xAxis);
+
+
+      
+         var area = d3.area()
+        .x(function(d) {return x(d.x); })
+        .y0(y(domainXY[1][0]))
+        .y1(function(d) { return y(d.y); });
+
+        var areaPath = g.append('path');
+        areaPath.datum(dataCol)
+        .attr('fill', 'steelblue')
+        .attr('d', area);
+
+
+
+        var xx= g.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + unitSize*graphScaleHeight + ")")
+        .attr("width","100%")
+        .call(xAxis);       
+
+        var yy = g.append("g")
+        .attr("class", "axis axis--y")
+        .call(yAxis);
+
+
+
+        var group = g.append("g")
+        .attr("class","contour")
+        .attr("fill", "none")
+        .attr("stroke", "#000")
+        .attr("stroke-width", 0)//<-----contour line setting
+        .attr("stroke-linejoin", "round");
+
+     
+
+        var rngGenerator = Array.apply(null,{length:dataCol.length}).map(Number.call,Number);
+        var rngA = Math.random();
+        var rngB = Math.random();
+        rngGenerator = rngGenerator.map(x=>Math.sin(x*3.14/dataCol.length*rngA+rngB*100));
+
+        var rngData = dataCol.filter(x=>Math.random()>rngGenerator.shift()+0.4);
+
+        var contourObj=d3.contourDensity().x(function(d) { return x(d.x); }).y(function(d) 
+        { return y(d.y); }).size([width, height]).bandwidth(4)(rngData);//d3.max(contourObj,function(d){return d.value;})
+
+        group.append("g").attr("class",panelObj[0].id+"_density")
+        .attr("visibility","visible")
+        .selectAll("path")
+        .data(contourObj)
+        .enter().append("path")
+        .attr("fill",  function(d){return GetOpposingRngColor(panelBGColor,2);})
+        .attr('style','opacity: '+1/contourObj.length+';')
+        .attr("d", d3.geoPath());
+        
+
+      };
+     
+    };
+
+    myPanelArray.forEach((dp)=>GenerateGraph(dp));    
+  },
+
+
+
+  createXPanel:function(n,gridName)
+  {      
+    var panelInfo = panelInfoList[0];   
+
+    for(i=0;i<n;i++)
+    {
+      this.createPanel(panelInfo,gridName);
+    }   
+  },
+
+  createPanel:function(panelInfo,gridName)
+  {
+      var $grid = $(gridName);
+      var w=panelInfo.w,
+        h=panelInfo.h,
+        panelButtonID=panelInfo.panelButtonID,
+        panelClassType=panelInfo.panelClassType;
+
+      var thisNamespace=this;
       var cw=styling.calculateDimension(w),
       panelID = 'panel_'+panelCount,
       ch=styling.calculateDimension(h);
@@ -308,8 +638,25 @@ var panelling =
       var panelObj=$('#'+panelID);
       thisNamespace.attachDragDrop(panelObj);
       thisNamespace.attachUploadSelectionPopup(panelObj);
+
+      return panelObj;
+  },
+
+  createPanelTemplateButton:function(no)
+  {
+    var panelInfo = panelInfoList[no];
+    var thisNamespace=this;//better to declare this because onevent cannot access its original class with 'this'
+  
+    $('#panelSelectionWindow').append('<button type="button" id="'+panelInfo.panelButtonID+'" class="btn btn-new-panel">'+panelInfo.panelButtonText+'</button>');
+    $grid=this.sharedVariables.$grid;
+    
+
+    $('#'+panelInfo.panelButtonID).click(function() 
+    {
+      thisNamespace.createPanel(panelInfo,'.grid');   
     });
   },
+
 
   attachDragDrop:function(panelObj)
   {   
@@ -369,5 +716,3 @@ var panelling =
 
 
 
-
-overheads.initiate();

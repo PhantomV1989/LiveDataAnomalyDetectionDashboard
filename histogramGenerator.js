@@ -41,6 +41,7 @@ histogramGraph.generateHistogram=
 
 	generateSimple:function(panelObj,dataCols,settingsObj)
 	{
+		var panelBGColor=panelObj[0].style.backgroundColor;   
 		if(!settingsObj.data[0].x)
 		{
 		  alert('Please choose a column.');
@@ -97,9 +98,10 @@ histogramGraph.generateHistogram=
 		var xAxis = d3.axisBottom(x);
 			
 			
+		/*	
 		var getRNG_Color=function(){return 'rgb('+String(parseInt(Math.random()*255))+','
 		                                         +String(parseInt(Math.random()*255))+','
-		                                         +String(parseInt(Math.random()*255))+')';};			
+		                                         +String(parseInt(Math.random()*255))+')';};			*/
 		for(var i in d_hist)
 		{
 			var group = svg.append("g").attr("class","data group_"+i).attr("style","stroke-width: 1px;stroke: black;");
@@ -111,56 +113,18 @@ histogramGraph.generateHistogram=
 			});
 
 			//assuming every bar is of same thickness
-			var thickness = x(+(d_hist[i][1].x1))-x(+(d_hist[i][1].x0));//need to readjust x0 for 1st ele and x1 for last
+			var thickness = x(+(d_hist[i][1].x1))-x(+(d_hist[i][1].x0));
+			var interval = d_hist[i][1].x1-d_hist[i][1].x0;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+			//need to readjust x0 for 1st ele and x1 for last
+			d_hist[i][0].x0 = d_hist[i][0].x1 - interval;
+			d_hist[i][d_hist[i].length-1].x1 = d_hist[i][d_hist[i].length-1].x0 + interval;
 
 			bar.append("rect")
 			.attr("x", 1)
 			.attr("width", function(d){return thickness;})
 			.attr("height", function(d) { return (ph - y(d.length));})
-			.attr("fill", getRNG_Color())
+			.attr("fill", GetOpposingRngColor(panelBGColor,5))
 			.attr("opacity", 1)
 			//.on("mouseover",  function (d){onMouseOver(d)})
 			//.on("mouseout", function (d){onMouseOut(d);})
@@ -178,11 +142,19 @@ histogramGraph.generateHistogram=
 
 			
 
-		svg.append("g")
+		var axis = svg.append("g")
 		.attr("class", "x axis")
 		.attr("transform", "translate(0," + ph + ")")
-		.call(xAxis)
-		.selectAll(".tick text")
+		.call(xAxis);
+
+		axis.append("text")
+		.attr("x", paintWidth/2)
+		.attr("y", -6)
+		.attr("style","text-anchor: middle")
+		.attr("font-size","12")
+		.text(settingsObj.data[0].x);
+
+		axis.selectAll(".tick text")
 		.attr("transform", "rotate(90) translate(5,-15)")	
 		.attr("style","text-anchor: start");
 

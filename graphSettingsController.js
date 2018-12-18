@@ -604,3 +604,11 @@ function hexToRgb(hex) {
     } : null;
 };
 
+
+function GetOpposingRngColor(panelBGColor, n)
+{
+  var colorSet =colorSphereV2.GetHarmonicColorsFromRGB(panelBGColor,n);
+  colorSet.shift();
+  return colorSet[Math.floor(Math.random() * colorSet.length)]
+};
+    

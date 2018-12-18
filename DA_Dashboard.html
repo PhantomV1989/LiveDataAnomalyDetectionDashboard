@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>	
+	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="stylesheet" href="bootstrap.min.css">
+  	<script src="jquery-3.2.1.min.js"></script>
+  	<script src="bootstrap.min.js"></script>
+
+
+  	<style type="text/css" media="screen">
+	:root
+	{
+		--dark-blue: #0D454C;
+		--light-blue: #35CCD2;
+		--blue-three: #21888F;
+
+		--red-one:#FF0000;
+		--red-two:#FDCFCF;
+
+		--tab-width:20%;
+
+		--setting-c-width:45vw;
+	}
+
+	body
+	{
+		background-color: rgb(19, 26, 78);
+		color:#FFFFFF;
+	}
+
+	div, path
+	{
+		transition: all 0.5s ease;
+	}
+
+	img
+	{
+		max-width: 100%;
+		max-height:100%;
+	}
+	.label 
+	{
+		font: 12px arial,serif bold;
+		text-anchor: middle;
+		float:left;
+		position: relative;
+	}
+
+	.path
+	{
+		max-width: 100%;
+		max-height:100%;
+	}
+
+
+	.row.content {height: 550px}	  
+	.sidenav 
+	{
+		background-color: var(--light-blue);
+		height: 100vh;
+		border-radius: 10px;
+		color: #FFFFFF;
+	}
+
+	.zoom
+	{
+	zoom:1;
+	-moz-transform: scale(1);
+	-moz-transform-origin:0 0;
+	  overflow:hidden;
+	}
+
+	.plot 
+	{
+	  background: black; 
+	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	  position: relative;
+	  width: window.innerWidth;
+	  overflow:hidden;
+	}
+
+	text 
+	{
+	  fill: black;
+	  font: 1px arial,serif bold;
+	}
+
+	.axis path, .axis line 
+	{
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+	.inactive 
+	{	  
+		  opacity:0.1;
+	}
+
+	.active 
+	{	  
+		  opacity:1;
+	}	
+
+	.main-svg
+	{
+		background: transparent;
+	}
+
+	#panelSelectionWindow {		
+		z-index: 9999;
+		position: fixed;
+		width: var(--tab-width);
+		height: 100%;
+		background: var(--red-two);
+		border: 7px solid #fff;
+		bottom: 0;
+		margin-left: calc(0px - var(--tab-width));
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
+	}
+
+
+
+	.tab 
+	{
+		z-index: 9999;
+		margin-left: 0%;
+		position: fixed;
+		color: #fff;
+		bottom: 50%;
+		font-size: 15px;		
+		-webkit-transition: all 0.5s ease;
+		-moz-transition: all 0.5s ease;
+		-o-transition: all 0.5s ease;
+		transition: all 0.5s ease;
+		cursor: pointer;
+		text-align: left;
+		letter-spacing: 1px;
+	}
+
+	.tab::after {
+		content: '';
+		display: block;
+		display: relative;
+		border-top: 175px solid transparent;
+		border-bottom: 175px solid transparent;
+		border-left: 30px solid var(--red-one);
+	}
+
+	#panelSelectionWindow.out
+	{
+		margin-left: 0%;
+	}
+
+	.tab.out
+	{
+		margin-left: var(--tab-width);
+	}
+
+	.btn-new-panel
+	{		
+		width: 90%;
+		height: 10%;
+		margin-left: 5%;
+		margin-top: 5%;
+		margin-bottom: 15%;
+		border-radius: 20%;
+	}
+
+	.settings
+	{		
+		z-index: 3;	
+		color: #000000;
+		font-size: 1vw;		
+	}
+
+	.form-inline
+	{
+		height: 100%;
+		margin: 1vw;
+	}
+	
+	.mainTable
+	{
+		width: var(--setting-c-width);
+		height: 2vw;		
+		margin-left: 1%;
+	}
+
+	table, tbody,tr,td
+	{
+		padding-top: 0.5vw;
+		vertical-align: top;
+	} 
+
+	table.faultTable 
+	{
+	  border: 5px solid rgb(0,0,0);
+	  background-color: rgb(0,255,255);
+
+	  position: relative;
+	  width: 550px;
+
+	  text-align: center;
+	  border-collapse: collapse;
+	  margin-top: 2vw;
+	  color: rgb(0,0,0);
+	}
+	table.faultTable td, table.faultTable th 
+	{
+	  border: 1px solid rgb(0,255,255);
+	  padding: 5px 10px;
+	}
+	table.faultTable tbody td 
+	{
+	  font-size: 12px;
+	  font-weight: bold;
+	  color: rgb(0,255,255);
+	}
+	table.faultTable td:nth-child(even) 
+	{
+	  background: #398AA4;
+	}
+	table.faultTable thead 
+	{
+	  background: steelblue;
+	}
+	table.faultTable thead th 
+	{
+	  font-size: 15px;
+	  font-weight: bold;
+	  color: #FFFFFF;
+	  text-align: left;
+	  border-left: 2px solid #398AA4;
+	}
+	table.faultTable thead th:first-child 
+	{
+	  border-left: none;
+	}
+
+	table.faultTable tfoot td 
+	{
+	  font-size: 13px;
+	}
+	table.faultTable tfoot .links 
+	{
+	  text-align: right;
+	}
+	table.faultTable tfoot .links a
+	{
+	  display: inline-block;
+	  background: #FFFFFF;
+	  color: #398AA4;
+	  padding: 2px 8px;
+	  border-radius: 5px;
+	}
+
+
+
+	.form-inline .form-group
+	{
+		width: 95%;
+		margin-bottom: 2%;
+	}
+
+	.borderless td, .borderless th
+	{
+	  border:none !important;
+	}
+
+	.dropdown
+	{
+		width:100%;
+	}
+
+	svg
+	{
+		cursor: default;
+	}
+
+	
+
+  	</style>
+
+
+  	<link rel="stylesheet" type="text/css" href="dragpanel.css">
+  	<link rel="stylesheet" type="text/css" href="dragdropfile.css">
+  	<link rel="stylesheet" type="text/css" href="popupnugget.css">
+</head>
+<body>
+	<div id="tooltip" 
+		style="visibility: hidden; 
+			position: fixed;		
+			padding: 0.5em; 
+			border-radius: 0.5em; 
+			border: medium none black; 
+			background-color: rgb(20, 20, 100); 
+			font: normal normal bold normal 15px arial, serif; 
+			color: white;
+			z-index:9999;
+			">
+	</div>
+
+
+	<table class="col-lg-12">
+		<tbody>
+			<tr>
+				<td class="col-lg-6">
+					<div class="container-fluid">		
+						<div>
+							<div class="grid" id="drag-grid" style="position: relative; height: 1493.64px; margin:2vw">
+							    <div class="gutter-sizer"></div>
+							    <div class="grid-sizer"></div>			  	   
+							</div>
+						</div>
+					</div>
+				</td>
+				<td class="col-lg-6">
+					<table>
+						<tbody>
+							<tr>
+								<td>
+									<table class="faultTable">
+										<thead>
+											<tr>
+												<th>Fault</th>
+												<th>Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<th>Oil Leak</th>
+												<th>Searching...</th>
+											</tr>
+											<tr>
+												<th>Over temp</th>
+												<th>Searching...</th>
+											</tr>											
+										</tbody>										
+									</table>									
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div style="background: steelblue;position: relative; width:550px; height: 100%; margin-top:30px;border: 4px solid black;">
+										<div style="font-size: 15px;font-weight: bold;color: #FFFFFF;padding-left: 10px;padding: 5px 10px;">Matched Patterns</div>									
+										<div class="container-fluid">		
+											<div>
+												<div class="grid" id="drag-grid2" style="position: relative; height: 1493.64px; margin:30px">
+												    <div class="gutter-sizer"></div>
+												    <div class="grid-sizer"></div>			  	   
+												</div>
+											</div>										
+										</div>
+									</div>										
+								</td>
+							</tr>							
+						</tbody>
+					</table>					
+				</td>				
+			</tr>			
+		</tbody>		
+	</table>
+
+
+	
+
+</body>
+<script src="./globalVariables.js"></script>
+
+<script src="./core/jquery.min.js"></script>
+<script src="./core/packery.pkgd.min.js"></script>
+<script src="./core/draggabilly.pkgd.js"></script>
+
+<script src="./graphSettingsController.js"></script>
+<script src="./dragpanelhelper.js"></script>
+<script src="./ddfile.js"></script>
+
+<!--preload D3-->
+<script src="./core/d3.v4.min.js"></script>
+<script src="./core/d3-contour.v1.min.js"></script>
+<script src="./core/d3-scale-chromatic.v1.min.js"></script>
+<script src="./core/colorSphere.v2.js"></script>
+
+<!--Graph Generators-->
+<script src="./scatterGenerator.js"></script>
+<script src="./histogramGenerator.js"></script>
+
+
+
+<script>
+	overheads.initiate('.grid');
+	overheads.initiate('.grid2');
+
+
+	d3.csv("test.csv", function(error, data) {
+		if (error) throw error;
+		var myData=[];
+		var keys = Object.keys(data[0]);
+		keys.forEach(function(k){
+			var col = data.map(c=>c[k]);
+			col = col.map(x=>parseFloat(x));
+			if(col.findIndex(isNaN)<0)
+			{
+				myData.push([k,col]);
+			};
+		});
+
+
+	
+
+		panelling.createRealTimeDataPanelWithTrigger(myData,'#drag-grid','#drag-grid2',400);//[myData[0]]
+	});
+
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

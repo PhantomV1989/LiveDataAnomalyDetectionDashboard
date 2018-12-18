@@ -69,12 +69,7 @@ scatterGraph.generateScatter=
 
   generate2D:function(panelObj,dataCols,settingsObj)
   {
-    var panelBGColor=panelObj[0].style.backgroundColor;
-    var colorSet = colorSphereV2.GetHarmonicColorsFromRGB(panelBGColor,7);
-    colorSet.shift();
-
-    var getRngColor = function(){return colorSet[Math.floor(Math.random() * colorSet.length)]};
-    
+    var panelBGColor=panelObj[0].style.backgroundColor;   
 
     function xaxisStyle(xaxisObj)
     {
@@ -117,7 +112,7 @@ scatterGraph.generateScatter=
     var svg = scatterGraph.generateSVG(panelObj)//this line must come first before svgInfo
         w=scatterGraph.svgInfo.width,
         h=scatterGraph.svgInfo.height,
-        pw=scatterGraph.svgInfo.paintWidth*resolution,
+        pw=scatterGraph.svgInfo.paintWidth*resolution*5,
         ph=scatterGraph.svgInfo.paintHeight*resolution;
 
     var x = settingsObj.xtimeparse?d3.scaleTime().range([0, pw]):d3.scaleLinear().range([0, pw]);
@@ -127,8 +122,8 @@ scatterGraph.generateScatter=
     yAxis = d3.axisLeft(y);
 
     var zoom = d3.zoom()
-    .scaleExtent([1, 32])
-    .translateExtent([[0, 0], [pw, ph]])
+    .scaleExtent([1, 1])
+    .translateExtent([[0, 0], [pw*5, ph]])
     .extent([[0, 0], [pw, ph]])
     .on("zoom", zoomed);
 
@@ -177,14 +172,14 @@ scatterGraph.generateScatter=
           return parseFloat(d[settingsObj.data[0].y]); }),
         max:d3.max(data, function(d) { return parseFloat(d[settingsObj.data[0].y]); }),
       };
-     x.domain(d3.extent(data, function(d) { return d[settingsObj.data[0].x]; }));
+     x.domain([xRng.min,xRng.max]);
      y.domain([yRng.min,yRng.max]);
 
      
       switch(settingsObj.optionA)//g2d:['','Marker', 'Line', 'Marker-Line', 'Timed']
       {
         case 'Marker':
-          g.append("g").attr("class","Marker").attr("fill",getRngColor()).selectAll("g")
+          g.append("g").attr("class","Marker").attr("fill",GetOpposingRngColor(panelBGColor,4)).selectAll("g")
           .data(data)
           .enter().append("circle")
           .attr("r", MarkerSize)
@@ -201,7 +196,7 @@ scatterGraph.generateScatter=
           g.append("path")
           .datum(data)
           .attr("fill", "none")
-          .attr("stroke", "steelblue")
+          .attr("stroke", GetOpposingRngColor(panelBGColor,3))
           .attr("stroke-linejoin", "round")
           .attr("stroke-linecap", "round")
           .attr("stroke-width", lineThickness)
@@ -210,7 +205,7 @@ scatterGraph.generateScatter=
 
         case 'Area':
           var area = d3.area()
-          .x(function(d) {console.log(d[settingsObj.data[0].x]);return x(d[settingsObj.data[0].x]); })
+          .x(function(d) {return x(d[settingsObj.data[0].x]); })
           .y0(paintHeight)
           .y1(function(d) { return y(d[settingsObj.data[0].y]); });
           g.append("path")
@@ -220,7 +215,19 @@ scatterGraph.generateScatter=
           break;
 
         case 'Density Contour':
-           g.append("g").attr("class","Marker").selectAll("g")
+          /*
+           var area = d3.area()//this part for sensitivity analysis demo purposes
+          .x(function(d) {return x(d[settingsObj.data[0].x]); })
+          .y0(paintHeight)
+          .y1(function(d) { return y(d[settingsObj.data[0].y]); });
+          g.append("path")
+          .datum(data)
+          .attr("fill", "steelblue")
+          .attr("d", area);*/
+
+
+
+           g.append("g").attr("class","Marker").attr("style", "visibility: hidden;").selectAll("g")
           .data(data)
           .enter().append("circle")
           .attr("r", MarkerSize)
@@ -231,8 +238,8 @@ scatterGraph.generateScatter=
           var group = g.append("g", "g")
           .attr("class","contour")
           .attr("fill", "none")
-          .attr("stroke", "#000")//<-----contour line setting
-          .attr("stroke-width", 0.3)
+          .attr("stroke", "#000")
+          .attr("stroke-width", 0)//<-----contour line setting
           .attr("stroke-linejoin", "round");
 
           var contourDensity = [];
@@ -244,23 +251,23 @@ scatterGraph.generateScatter=
           
 
             group.append("g").attr("class",panelObj[0].id+"_density "+i*2)
-            .attr("visibility",function(){return i*2==8?"visible":"hidden"})
+            .attr("visibility",function(){return i*2==6?"visible":"hidden"})
             .selectAll("path")
             .data(contourObj)
             .enter().append("path")
-            .attr("fill",  function(d){return getRngColor();})
+            .attr("fill",  function(d){return GetOpposingRngColor(panelBGColor,2);})
             .attr('style','opacity: '+1/contourObj.length+';')
             .attr("d", d3.geoPath());
           }       
 
           // the following part for external settings
-          var clClass = panelObj[0].id + 'cl';panelObj.clClass=true;
-          var mClass = panelObj[0].id + 'M';panelObj.mClass=true;
+          var clClass = panelObj[0].id + 'cl';panelObj.clClass=false;
+          var mClass = panelObj[0].id + 'M';panelObj.mClass=false;
           var checkboxContourlines = CreateCheckBox('Contour Lines', clClass);
           var checkboxMarkers = CreateCheckBox('Marker',mClass);
        
           var densityCloudDropdown = createDropdown('Density Cloud',[panelObj[0].id + 'contour_density_cloud'],contourDensity);
-          panelObj.contourDensity=8;
+          panelObj.contourDensity=6;
          //AppendSettings(graphObj, content, event)
           var s = 
           '<div>' +
@@ -337,7 +344,10 @@ scatterGraph.generateScatter=
       .text(settingsObj.data[0].y);
       yaxisStyle(yy);
 
-      svg.call(zoom).transition();     
+        svg.call(zoom).transition()
+      .duration(1000)
+      .call(zoom.transform, d3.zoomIdentity
+          .translate(-x(xRng.max/5), 0));
     };
 
     function zoomed() 

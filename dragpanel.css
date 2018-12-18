@@ -1,13 +1,10 @@
       :root
       {
-        --gap: 5px;
-        --unit-size: 220px;
+        --gap: 10px;
+        --unit-size: 120px;
         --transition-time:0.2s;
       }
 
-      .grid {
-        background: #0D454C;
-      }
 
       .grid .grid-sizer,
       .grid .grid-item { 
@@ -22,12 +19,13 @@
       .grid .grid-item {
         height: var(--unit-size);
         float: left;       
-        border: 3px solid rgba(0, 0, 0, 0.1);
+        border: 5px solid rgb(0,0,0);
         z-index: 1;
         color: #fff;
         font-size: 50px;
         border-radius: 5%;              
         transition: width var(--transition-time), height var(--transition-time);
+        margin:0px;
       }
 
       .grid-item.two
