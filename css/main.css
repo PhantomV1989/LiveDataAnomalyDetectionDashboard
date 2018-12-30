@@ -1,0 +1,200 @@
+:root {
+    --dark-blue: #0D454C;
+    --light-blue: #35CCD2;
+    --blue-three: #21888F;
+    --red-one:#FF0000;
+    --red-two:#FDCFCF;
+    --tab-width:20%;
+    --setting-c-width:45vw;
+}
+body {
+    background-color: rgb(19, 26, 78);
+    color:#FFFFFF;
+}
+div, path {
+    transition: all 0.5s ease;
+}
+img {
+    max-width: 100%;
+    max-height:100%;
+}
+.label {
+    font: 12px arial,serif bold;
+    text-anchor: middle;
+    float:left;
+    position: relative;
+}
+.path {
+    max-width: 100%;
+    max-height:100%;
+}
+.row.content {
+   height: 550px
+}
+.sidenav {
+    background-color: var(--light-blue);
+    height: 100vh;
+    border-radius: 10px;
+    color: #FFFFFF;
+}
+.zoom {
+    zoom:1;
+    -moz-transform: scale(1);
+    -moz-transform-origin:0 0;
+    overflow:hidden;
+}
+.plot {
+    background: black;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: relative;
+    width: window.innerWidth;
+    overflow:hidden;
+}
+text {
+    fill: black;
+    font: 1px arial,serif bold;
+}
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+.inactive {
+    opacity:0.1;
+}
+.active {
+    opacity:1;
+}
+.main-svg {
+    background: transparent;
+}
+#panelSelectionWindow {
+    z-index: 9999;
+    position: fixed;
+    width: var(--tab-width);
+    height: 100%;
+    background: var(--red-two);
+    border: 7px solid #fff;
+    bottom: 0;
+    margin-left: calc(0px - var(--tab-width));
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+}
+.tab {
+    z-index: 9999;
+    margin-left: 0%;
+    position: fixed;
+    color: #fff;
+    bottom: 50%;
+    font-size: 15px;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    text-align: left;
+    letter-spacing: 1px;
+}
+.tab::after {
+    content: '';
+    display: block;
+    display: relative;
+    border-top: 175px solid transparent;
+    border-bottom: 175px solid transparent;
+    border-left: 30px solid var(--red-one);
+}
+#panelSelectionWindow.out {
+    margin-left: 0%;
+}
+.tab.out {
+    margin-left: var(--tab-width);
+}
+.btn-new-panel {
+    width: 90%;
+    height: 10%;
+    margin-left: 5%;
+    margin-top: 5%;
+    margin-bottom: 15%;
+    border-radius: 20%;
+}
+.settings {
+    z-index: 3;
+    color: #000000;
+    font-size: 1vw;
+}
+.form-inline {
+    height: 100%;
+    margin: 1vw;
+}
+.mainTable {
+    width: var(--setting-c-width);
+    height: 2vw;
+    margin-left: 1%;
+}
+table, tbody,tr,td {
+    padding-top: 0.5vw;
+    vertical-align: top;
+}
+table.faultTable {
+    border: 5px solid rgb(0,0,0);
+    background-color: rgb(0,255,255);
+    position: relative;
+    width: 550px;
+    text-align: center;
+    border-collapse: collapse;
+    margin-top: 2vw;
+    color: rgb(0,0,0);
+}
+table.faultTable td, table.faultTable th {
+    border: 1px solid rgb(0,255,255);
+    padding: 5px 10px;
+}
+table.faultTable tbody td {
+    font-size: 12px;
+    font-weight: bold;
+    color: rgb(0,255,255);
+}
+table.faultTable td:nth-child(even) {
+    background: #398AA4;
+}
+table.faultTable thead {
+    background: steelblue;
+}
+table.faultTable thead th {
+    font-size: 15px;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-align: left;
+    border-left: 2px solid #398AA4;
+}
+table.faultTable thead th:first-child {
+    border-left: none;
+}
+table.faultTable tfoot td {
+    font-size: 13px;
+}
+table.faultTable tfoot .links {
+    text-align: right;
+}
+table.faultTable tfoot .links a {
+    display: inline-block;
+    background: #FFFFFF;
+    color: #398AA4;
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+.form-inline .form-group {
+    width: 95%;
+    margin-bottom: 2%;
+}
+.borderless td, .borderless th {
+    border:none !important;
+}
+.dropdown {
+    width:100%;
+}
+svg {
+    cursor: default;
+}

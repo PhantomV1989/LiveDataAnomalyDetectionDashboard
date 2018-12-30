@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>	
+	<meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="./css/bootstrap.min.css">
+	  <link rel="stylesheet" href="./css/main.css">
+  	<link rel="stylesheet" type="text/css" href="./css/dragpanel.css">
+  	<link rel="stylesheet" type="text/css" href="./css/dragdropfile.css">
+  	<link rel="stylesheet" type="text/css" href="./css/popupnugget.css">
+</head>
+<body>
+	<div id="tooltip" 
+		style="visibility: hidden; 
+			position: fixed;		
+			padding: 0.5em; 
+			border-radius: 0.5em; 
+			border: medium none black; 
+			background-color: rgb(20, 20, 100); 
+			font: normal normal bold normal 15px arial, serif; 
+			color: white;
+			z-index:9999;
+			">
+	</div>
+
+
+	<table class="col-lg-12">
+		<tbody>
+			<tr>
+				<td class="col-lg-6">
+					<div class="container-fluid">		
+						<div>
+							<div class="grid" id="drag-grid" style="position: relative; height: 1493.64px; margin:2vw">
+							    <div class="gutter-sizer"></div>
+							    <div class="grid-sizer"></div>			  	   
+							</div>
+						</div>
+					</div>
+				</td>
+				<td class="col-lg-6">
+					<table>
+						<tbody>
+							<tr>
+								<td>
+									<table class="faultTable">
+										<thead>
+											<tr>
+												<th>Fault</th>
+												<th>Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr>
+												<th>Oil Leak</th>
+												<th>Searching...</th>
+											</tr>
+											<tr>
+												<th>Over temp</th>
+												<th>Searching...</th>
+											</tr>											
+										</tbody>										
+									</table>									
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<div style="background: steelblue;position: relative; width:550px; height: 100%; margin-top:30px;border: 4px solid black;">
+										<div style="font-size: 15px;font-weight: bold;color: #FFFFFF;padding-left: 10px;padding: 5px 10px;">Matched Patterns</div>									
+										<div class="container-fluid">		
+											<div>
+												<div class="grid" id="drag-grid2" style="position: relative; height: 1493.64px; margin:30px">
+												    <div class="gutter-sizer"></div>
+												    <div class="grid-sizer"></div>			  	   
+												</div>
+											</div>										
+										</div>
+									</div>										
+								</td>
+							</tr>							
+						</tbody>
+					</table>					
+				</td>				
+			</tr>			
+		</tbody>		
+	</table>
+
+
+	
+
+</body>
+<script src="./js/globalVariables.js"></script>
+
+<script src="./js/jquery.min.js"></script>
+<script src="./js/bootstrap.min.js"></script>
+
+<script src="./js/packery.pkgd.min.js"></script>
+<script src="./js/draggabilly.pkgd.js"></script>
+
+<script src="./js/dragpanelhelper.js"></script>
+<script src="./js/ddfile.js"></script>
+
+<!--preload D3-->
+<script src="./js/d3.v4.min.js"></script>
+<script src="./js/d3-contour.v1.min.js"></script>
+<script src="./js/d3-scale-chromatic.v1.min.js"></script>
+<script src="./js/colorSphere.v2.js"></script>
+
+<!--Graph Generators-->
+<script src="./js/graphSettingsController.js"></script>
+<script src="./js/scatterGenerator.js"></script>
+
+
+
+<script>
+	overheads.initiate('.grid');
+	overheads.initiate('.grid2');
+
+	d3.csv("test.csv", function(error, data) {
+		if (error) throw error;
+		let myData=[];
+		let keys = Object.keys(data[0]);
+		keys.forEach(function(k){
+			var col = data.map(c=>c[k]);
+			col = col.map(x=>parseFloat(x));
+			if(col.findIndex(isNaN)<0)
+			{
+				myData.push([k,col]);
+			};
+		});
+
+		panelling.createRealTimeDataPanelWithTrigger(myData,'#drag-grid','#drag-grid2',400);//[myData[0]]
+	});
+
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

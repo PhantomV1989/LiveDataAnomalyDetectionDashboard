@@ -1,5 +1,0 @@
-parseTime/date
-Ryan
-
-histogram
-circular
